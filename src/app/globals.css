@@ -1,35 +1,36 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Uthman Naskh';
-  src: local('KFGQPC Uthman Taha Naskh'),
-       url('/fonts/kfgqpc/UthmanTN1 Ver10.woff2') format('woff2');
+  font-family: "Uthman Naskh";
+  src: local("KFGQPC Uthman Taha Naskh"),
+    url("/fonts/kfgqpc/UthmanTN1 Ver10.woff2") format("woff2");
   font-display: swap;
 }
 @font-face {
-  font-family: 'Uthman Naskh';
+  font-family: "Uthman Naskh";
   font-weight: bold;
-  src: local('KFGQPC Uthman Taha Naskh Bold'), local('KFGQPCUthmanTahaNaskh-Bold'),
-       url('/fonts/kfgqpc/UthmanTN1B Ver10.woff2') format('woff2');
+  src: local("KFGQPC Uthman Taha Naskh Bold"),
+    local("KFGQPCUthmanTahaNaskh-Bold"),
+    url("/fonts/kfgqpc/UthmanTN1B Ver10.woff2") format("woff2");
   font-display: swap;
 }
 @font-face {
-  font-family: 'Uthman Hafs';
-  src: local('KFGQPC Uthmanic Script HAFS'),
-       url('/fonts/kfgqpc/UthmanicHafs1 Ver09.woff2') format('woff2');
+  font-family: "Uthman Hafs";
+  src: local("KFGQPC Uthmanic Script HAFS"),
+    url("/fonts/kfgqpc/UthmanicHafs1 Ver09.woff2") format("woff2");
   font-display: swap;
 }
 @font-face {
-  font-family: 'LPMQ Isep Misbah';
-  src: url('/fonts/lpmq.woff') format('woff');
+  font-family: "LPMQ Isep Misbah";
+  src: url("/fonts/lpmq.woff") format("woff");
   font-display: swap;
 }
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: 'LPMQ Isep Misbah', 'Uthman Hafs', serif;
-  --font-symbols: 'QPC Symbols', serif;
-  
+  --font-arabic: "LPMQ Isep Misbah", "Uthman Hafs", serif;
+  --font-symbols: "QPC Symbols", serif;
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -112,7 +113,28 @@
 }
 
 @layer utilities {
-  .font-arabic { 
-    font-family: 'LPMQ Isep Misbah', 'Uthman Hafs', serif; 
+  .font-arabic {
+    font-family: "LPMQ Isep Misbah", "Uthman Hafs", serif;
+  }
+  .arabic-text {
+    @apply py-6 leading-[3];
+  }
+
+  /* Fullscreen mode styles */
+  :fullscreen {
+    background: hsl(var(--background));
+  }
+
+  /* Hide UI elements in fullscreen */
+  :fullscreen .navbar,
+  :fullscreen .bottom-nav,
+  :fullscreen [role="navigation"] {
+    display: none !important;
+  }
+
+  /* Adjust padding in fullscreen */
+  :fullscreen main,
+  :fullscreen .max-w-4xl {
+    padding-bottom: 3rem !important;
   }
 }

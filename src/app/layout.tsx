@@ -7,7 +7,7 @@ import { AudioBar } from "@/components/player/AudioBar";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: 'swap',
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -22,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
+      <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
           {children}
           <AudioBar />

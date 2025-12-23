@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/navigation/Sidebar";
 import { BottomNav } from "@/components/navigation/BottomNav";
 
-export default function MainLayout({
+export default function SurahLayout({
   children,
 }: {
   children: React.ReactNode;

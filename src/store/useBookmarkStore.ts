@@ -6,12 +6,15 @@ interface Bookmark {
   ayahNumber: number;
   ayahKey: string;
   chapterName: string;
+  textArabic?: string;
+  translation?: string;
 }
 
 interface BookmarkState {
   bookmarks: Bookmark[];
   addBookmark: (bookmark: Bookmark) => void;
   removeBookmark: (ayahKey: string) => void;
+  toggleBookmark: (bookmark: Bookmark) => void;
   isBookmarked: (ayahKey: string) => boolean;
 }
 
@@ -29,6 +32,14 @@ export const useBookmarkStore = create<BookmarkState>()(
       },
       isBookmarked: (ayahKey) => {
         return get().bookmarks.some((b) => b.ayahKey === ayahKey);
+      },
+      toggleBookmark: (bookmark) => {
+        const exists = get().isBookmarked(bookmark.ayahKey);
+        if (exists) {
+          get().removeBookmark(bookmark.ayahKey);
+        } else {
+          get().addBookmark(bookmark);
+        }
       },
     }),
     {

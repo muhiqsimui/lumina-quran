@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Verse } from '@/types';
-import { AyahItem } from './AyahItem';
-import { TafsirSheet } from './TafsirSheet';
-import { useAudioStore } from '@/store/useAudioStore';
-import { useBookmarkStore } from '@/store/useBookmarkStore';
-import { useSettingsStore } from '@/store/useSettingsStore';
-import { useScrollToAyah } from '@/hooks/useScrollToAyah';
+import { useState, useEffect } from "react";
+import { Verse } from "@/types";
+import { AyahItem } from "./AyahItem";
+import { TafsirSheet } from "./TafsirSheet";
+import { useAudioStore } from "@/store/useAudioStore";
+import { useBookmarkStore } from "@/store/useBookmarkStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { useScrollToAyah } from "@/hooks/useScrollToAyah";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface VerseListProps {
   verses: Verse[];
@@ -17,38 +18,75 @@ interface VerseListProps {
 
 export function VerseList({ verses, chapterId, chapterName }: VerseListProps) {
   const [activeTafsir, setActiveTafsir] = useState<string | null>(null);
-  const { setAudio, currentAyah } = useAudioStore();
+  const [lastReadAyah, setLastReadAyah] = useState<number>(1);
+  const { setAudio, currentAyah, setNavigationCallbacks } = useAudioStore();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarkStore();
-  const { setLastRead } = useSettingsStore();
-  
+  const { setLastRead, selectedQari } = useSettingsStore();
+
   useScrollToAyah(currentAyah);
 
+  // Debounce last read updates to avoid excessive store updates
+  const debouncedLastReadAyah = useDebounce(lastReadAyah, 800);
+
+  // Initialize with first ayah when component mounts
   useEffect(() => {
-    // Basic implementation: set the first verse or a visible verse as last read
-    // For simplicity, we just set the chapter when entering
+    setLastReadAyah(1);
+  }, [chapterId]);
+
+  // Save debounced last read to persistent store
+  useEffect(() => {
     setLastRead({
       chapterId,
       chapterName,
-      ayahNumber: 1,
+      ayahNumber: debouncedLastReadAyah,
     });
-  }, [chapterId, chapterName, setLastRead]);
+  }, [debouncedLastReadAyah, chapterId, chapterName, setLastRead]);
+
+  // Register navigation callbacks for AudioBar
+  useEffect(() => {
+    const handleNextAyah = () => {
+      const { repeatMode } = useAudioStore.getState();
+      if (lastReadAyah < verses.length) {
+        const nextVerse = verses[lastReadAyah];
+        handlePlay(nextVerse);
+      } else if (repeatMode === "all") {
+        // Loop back to Ayah 1 of current surah
+        handlePlay(verses[0]);
+      }
+    };
+
+    const handlePrevAyah = () => {
+      if (lastReadAyah > 1) {
+        const prevVerse = verses[lastReadAyah - 2];
+        handlePlay(prevVerse);
+      }
+    };
+
+    setNavigationCallbacks(handleNextAyah, handlePrevAyah);
+  }, [lastReadAyah, verses, setNavigationCallbacks]);
 
   const handlePlay = (verse: Verse) => {
+    // Use selectedQari from store, or fallback to default
+    if (!selectedQari) return;
+
     // Pad surah and verse numbers with leading zeros (001001 format)
-    const surahPadded = String(chapterId).padStart(3, '0');
-    const versePadded = String(verse.verse_number).padStart(3, '0');
-    
-    // Using Ali Al-Hudhaify (Imam of Madinah) - Verified Mirror
-    const audioUrl = `https://mirrors.quranicaudio.com/everyayah/Hudhaify_128kbps/${surahPadded}${versePadded}.mp3`;
-    
-    setAudio(chapterId, verse.verse_number, audioUrl, chapterName);
-    
-    // Update last read when playing
-    setLastRead({
+    const surahPadded = String(chapterId).padStart(3, "0");
+    const versePadded = String(verse.verse_number).padStart(3, "0");
+
+    // Build audio URL using EveryAyah API with selected qari
+    const audioUrl = `https://everyayah.com/data/${selectedQari.reciter_id}/${surahPadded}${versePadded}.mp3`;
+
+    setAudio(
       chapterId,
+      verse.verse_number,
+      audioUrl,
       chapterName,
-      ayahNumber: verse.verse_number,
-    });
+      selectedQari.name,
+      verses.length
+    );
+
+    // Update last read ayah when playing
+    setLastReadAyah(verse.verse_number);
   };
 
   const handleBookmark = (verse: Verse) => {

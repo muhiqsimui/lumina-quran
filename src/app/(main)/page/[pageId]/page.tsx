@@ -1,7 +1,8 @@
-import { getVersesByPage, getChapters } from '@/lib/api';
-import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { PageTracker } from '@/components/quran/PageTracker';
+import { getVersesByPage, getChapters } from "@/lib/api";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { PageTracker } from "@/components/quran/PageTracker";
+import { FloatingPageControls } from "@/components/quran/FloatingPageControls";
 
 interface PageReadingProps {
   params: Promise<{ pageId: string }>;
@@ -12,60 +13,80 @@ export default async function PageReading({ params }: PageReadingProps) {
   const currentPage = parseInt(pageId);
   const data = await getVersesByPage(currentPage);
   const verses = data.verses;
-  
-  // Fetch chapters to get proper names
   const { chapters } = await getChapters();
 
+  // Calculate juz from verses
+  const currentJuz = verses[0]?.juz_number || Math.ceil(currentPage / 20);
+
   return (
-    <div className="max-w-3xl mx-auto min-h-screen bg-[#fffcf2] text-[#2d2d2d] flex flex-col items-center py-8 px-4 md:px-8 shadow-2xl my-4 rounded-sm border-l-4 border-r-4 border-[#eaddcf]">
+    // Mobile: Hilangkan margin luar (my-4) dan shadow agar fokus ke teks. Border samping dikurangi di mobile.
+    <div className="max-w-3xl mx-auto min-h-screen bg-[#fffcf2] text-[#2d2d2d] flex flex-col items-center py-4 sm:py-8 px-3 sm:px-8 shadow-2xl sm:my-4 rounded-sm border-x-[2px] sm:border-x-4 border-[#eaddcf]">
+      {/* Floating Page Controls */}
+      <FloatingPageControls currentPage={currentPage} currentJuz={currentJuz} />
+
       <PageTracker pageId={currentPage} />
-      
-      {/* Header Info */}
-      <div className="w-full flex justify-between text-xs font-serif text-[#8a8a8a] mb-6 px-2 border-b border-[#eaddcf] pb-2">
-        <span>Juz {verses[0]?.juz_number || '-'}</span>
-        <span>Halaman {currentPage}</span>
+
+      {/* Header Info: Dibuat lebih rapat di mobile */}
+      <div className="w-full flex justify-between text-[10px] sm:text-xs font-serif text-[#8a8a8a] mb-4 sm:mb-6 px-1 border-b border-[#eaddcf] pb-2">
+        <span>Juz {verses[0]?.juz_number || "-"}</span>
+        <span className="font-bold text-[#5d5d5d]">Halaman {currentPage}</span>
       </div>
 
       {/* Mushaf Content Area */}
-      <div className="w-full h-full flex-1 flex flex-col justify-center">
-        
-        <div 
-          className="font-arabic text-[28px] leading-[2.2] text-justify w-full"
+      <div className="w-full h-full flex-1 flex flex-col justify-start sm:justify-center">
+        <div
+          // Mobile: Font-size sedikit lebih kecil (24px) agar tidak terlalu banyak line-break, sm: 28px
+          className="font-arabic text-[24px] sm:text-[28px] leading-[2.4] sm:leading-[2.2] text-justify w-full"
           dir="rtl"
-          style={{ textAlignLast: 'center' }}
+          style={{ textAlignLast: "center" }}
         >
-          {verses.map((verse, idx) => {
-            // Check if this verse is the start of a Surah (verse 1)
+          {verses.map((verse) => {
             const isSurahStart = verse.verse_number === 1;
-            // Get chapter info. 
-            // Note: Since we don't have chapter_id in verse object from some APIs, we might need to rely on verse_key "1:1"
-            const chapterId = parseInt(verse.verse_key.split(':')[0]);
-            const chapter = chapters.find(c => c.id === chapterId);
+            const chapterId = parseInt(verse.verse_key.split(":")[0]);
+            const chapter = chapters.find((c) => c.id === chapterId);
 
             return (
-              <span key={verse.id}>
+              <span key={verse.id} className="inline">
                 {isSurahStart && (
-                  <div className="w-full block my-8">
-                     <div className="w-full h-24 bg-[url('/surah-header.png')] bg-contain bg-no-repeat bg-center flex flex-col items-center justify-center border-y border-black/10 relative py-2">
-                        <div className="absolute inset-x-0 h-full border-y-[3px] border-double border-[#eaddcf]" />
-                        <div className="z-10 bg-[#fffcf2] px-6 font-arabic text-3xl text-black font-bold mb-1">
-                          سورة {chapter?.name_arabic || ''}
-                        </div>
-                        <div className="z-10 bg-[#fffcf2] px-2 font-serif text-sm text-[#8a8a8a] tracking-widest uppercase">
-                          {chapter?.name_simple || ''}
-                        </div>
-                     </div>
-                     <div className="text-center font-arabic text-3xl mt-6 mb-4">
-                       بسم الله الرحمن الرحيم
-                     </div>
+                  <div className="w-full block my-6 sm:my-8" dir="rtl">
+                    {/* Surah Header: Dibuat responsif tinggi dan font-nya */}
+                    <div className="w-full min-h-[70px] sm:h-24 bg-[url('/surah-header.png')] bg-contain bg-no-repeat bg-center flex flex-col items-center justify-center border-y border-black/5 relative py-2">
+                      <div className="absolute inset-x-0 h-full border-y-[2px] sm:border-y-[3px] border-double border-[#eaddcf]" />
+                      <div className="z-10 bg-[#fffcf2] px-4 sm:px-6 font-arabic text-xl sm:text-3xl text-black font-bold mb-0.5 sm:mb-1">
+                        سورة {chapter?.name_arabic || ""}
+                      </div>
+                      <div className="z-10 bg-[#fffcf2] px-2 font-serif text-[10px] sm:text-sm text-[#8a8a8a] tracking-widest uppercase">
+                        {chapter?.name_simple || ""}
+                      </div>
+                    </div>
+                    {/* Bismillah: Ukuran disesuaikan mobile */}
+                    <div className="text-center font-arabic text-2xl sm:text-3xl mt-4 mb-2 sm:mt-6 sm:mb-4 text-black/90">
+                      بسم الله الرحمن الرحيم
+                    </div>
                   </div>
                 )}
-                
-                {(verse.text_uthmani || '').replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ', '')} 
-                <span className="inline-flex items-center justify-center w-[1.5em] h-[1.5em] mx-1 align-middle bg-[url('/ayah-marker.svg')] bg-contain bg-no-repeat bg-center select-none relative" style={{ transform: 'translateY(5px)' }}>
-                   <span className="text-[0.5em] font-bold text-black pt-1">
-                     {verse.verse_number.toLocaleString('ar-EG')}
-                   </span>
+
+                <span className="inline">
+                  {(verse.text_uthmani || "").replace(
+                    "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                    ""
+                  )}
+                </span>
+
+                {/* Nomor Ayat Marker */}
+                <span
+                  className="inline-flex items-center justify-center w-[1.8em] h-[1.8em] mx-1 align-middle bg-[url('/ayah-marker.svg')] bg-contain bg-no-repeat bg-center select-none relative"
+                  style={{ transform: "translateY(6px)" }} // Sesuaikan ini agar marker sejajar dengan garis teks Arab
+                >
+                  <span
+                    className="absolute inset-0 flex items-center justify-center text-[0.8em] font-extrabold text-black leading-none"
+                    style={{
+                      fontFamily: "sans-serif", // Menggunakan font sistem biasanya lebih stabil untuk posisi angka
+                      paddingTop: "0.1em", // Sedikit penyesuaian visual untuk font Arab agar tidak terlihat terlalu ke bawah
+                    }}
+                  >
+                    {verse.verse_number.toLocaleString("ar-EG")}
+                  </span>
                 </span>
               </span>
             );
@@ -73,25 +94,35 @@ export default async function PageReading({ params }: PageReadingProps) {
         </div>
       </div>
 
-      {/* Footer Navigation */}
-      <div className="mt-12 flex items-center justify-center gap-8 w-full">
-         <Link
+      {/* Footer Navigation: Dibuat Fixed atau lebih besar di mobile agar mudah di-tap */}
+      <div className="mt-8 sm:mt-12 flex items-center justify-between sm:justify-center gap-4 sm:gap-8 w-full max-w-xs">
+        <Link
           href={`/page/${Math.max(1, currentPage - 1)}`}
-          className={`p-2 hover:bg-black/5 rounded-full transition-all ${currentPage <= 1 ? 'opacity-0 pointer-events-none' : ''}`}
+          className={`flex-1 flex justify-center p-3 bg-[#eaddcf]/30 sm:bg-transparent hover:bg-black/5 rounded-xl transition-all active:scale-90 ${
+            currentPage <= 1 ? "opacity-0 pointer-events-none" : ""
+          }`}
         >
-          <ChevronRight className="w-6 h-6 rotate-180" />
+          <ChevronLeft className="w-6 h-6" />
         </Link>
-        
-        <span className="font-serif text-sm text-[#8a8a8a]">{currentPage}</span>
+
+        <div className="flex flex-col items-center min-w-[60px]">
+          <span className="font-serif text-[10px] text-[#8a8a8a] uppercase">
+            Hal.
+          </span>
+          <span className="font-serif text-lg font-bold text-[#2d2d2d]">
+            {currentPage}
+          </span>
+        </div>
 
         <Link
           href={`/page/${Math.min(604, currentPage + 1)}`}
-          className={`p-2 hover:bg-black/5 rounded-full transition-all ${currentPage >= 604 ? 'opacity-0 pointer-events-none' : ''}`}
+          className={`flex-1 flex justify-center p-3 bg-[#eaddcf]/30 sm:bg-transparent hover:bg-black/5 rounded-xl transition-all active:scale-90 ${
+            currentPage >= 604 ? "opacity-0 pointer-events-none" : ""
+          }`}
         >
           <ChevronRight className="w-6 h-6" />
         </Link>
       </div>
-
     </div>
   );
 }

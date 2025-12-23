@@ -1,36 +1,76 @@
-import { API_BASE_URL, DEFAULT_LANGUAGE, DEFAULT_TRANSLATION_ID, DEFAULT_TAFSIR_ID } from './constants';
-import { ChaptersResponse, VersesResponse, TafsirResponse, Verse, SearchResponse } from '@/types';
+import {
+  API_BASE_URL,
+  DEFAULT_LANGUAGE,
+  DEFAULT_TRANSLATION_ID,
+  DEFAULT_TAFSIR_ID,
+} from "./constants";
+import {
+  ChaptersResponse,
+  VersesResponse,
+  TafsirResponse,
+  Verse,
+  SearchResponse,
+} from "@/types";
 
-const RIOASTAMAL_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master';
+const RIOASTAMAL_URL =
+  "https://raw.githubusercontent.com/rioastamal/quran-json/master";
 
-export async function searchVerses(query: string, page: number = 1): Promise<SearchResponse> {
+/**
+ * Generate audio URL for a specific verse from a specific qari using EveryAyah API
+ * @param reciterId - The reciter ID from EveryAyah (e.g., 'Alafasy_64kbps')
+ * @param surahId - The surah number
+ * @param verseNumber - The verse number
+ * @returns Full audio URL
+ */
+export function getAudioUrl(
+  reciterId: string,
+  surahId: number,
+  verseNumber: number
+): string {
+  const surahPadded = String(surahId).padStart(3, "0");
+  const versePadded = String(verseNumber).padStart(3, "0");
+  return `https://everyayah.com/data/${reciterId}/${surahPadded}${versePadded}.mp3`;
+}
+
+export async function searchVerses(
+  query: string,
+  page: number = 1
+): Promise<SearchResponse> {
   const res = await fetch(
-    `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&language=${DEFAULT_LANGUAGE}&size=20&page=${page}`
+    `${API_BASE_URL}/search?q=${encodeURIComponent(
+      query
+    )}&language=${DEFAULT_LANGUAGE}&size=20&page=${page}`
   );
-  if (!res.ok) throw new Error('Failed to search verses');
+  if (!res.ok) throw new Error("Failed to search verses");
   return res.json();
 }
 
 export async function getChapters(): Promise<ChaptersResponse> {
-  const res = await fetch(`${API_BASE_URL}/chapters?language=${DEFAULT_LANGUAGE}`);
-  if (!res.ok) throw new Error('Failed to fetch chapters');
+  const res = await fetch(
+    `${API_BASE_URL}/chapters?language=${DEFAULT_LANGUAGE}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch chapters");
   return res.json();
 }
 
 export async function getChapter(id: number | string) {
-  const res = await fetch(`${API_BASE_URL}/chapters/${id}?language=${DEFAULT_LANGUAGE}`);
-  if (!res.ok) throw new Error('Failed to fetch chapter');
+  const res = await fetch(
+    `${API_BASE_URL}/chapters/${id}?language=${DEFAULT_LANGUAGE}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch chapter");
   return res.json();
 }
 
-export async function getVerses(chapterId: number | string): Promise<VersesResponse> {
+export async function getVerses(
+  chapterId: number | string
+): Promise<VersesResponse> {
   // Fetch from rioastamal as requested by user to fix rendering issues
   const res = await fetch(`${RIOASTAMAL_URL}/surah/${chapterId}.json`);
-  if (!res.ok) throw new Error('Failed to fetch verses from rioastamal');
-  
+  if (!res.ok) throw new Error("Failed to fetch verses from rioastamal");
+
   const data = await res.json();
   const surahData = data[Object.keys(data)[0]]; // The JSON is keyed by surah number string
-  
+
   const verses: Verse[] = Object.keys(surahData.text).map((key) => {
     const verseNumber = parseInt(key);
     return {
@@ -49,10 +89,10 @@ export async function getVerses(chapterId: number | string): Promise<VersesRespo
         {
           id: DEFAULT_TRANSLATION_ID,
           resource_id: DEFAULT_TRANSLATION_ID,
-          text: surahData.translations.id.text[key]
-        }
+          text: surahData.translations.id.text[key],
+        },
       ],
-      words: [] // Rioastamal does not provide word-by-word data
+      words: [], // Rioastamal does not provide word-by-word data
     };
   });
 
@@ -63,46 +103,50 @@ export async function getVerses(chapterId: number | string): Promise<VersesRespo
       current_page: 1,
       next_page: null,
       total_pages: 1,
-      total_records: verses.length
-    }
+      total_records: verses.length,
+    },
   };
 }
 
-export async function getVersesByPage(pageNumber: number | string): Promise<VersesResponse> {
-  // Rioastamal doesn't provide page-based data easily. 
+export async function getVersesByPage(
+  pageNumber: number | string
+): Promise<VersesResponse> {
+  // Rioastamal doesn't provide page-based data easily.
   // For now, we fallback to quran.com but this might still have the rendering issues the user complained about.
   const res = await fetch(
     `${API_BASE_URL}/verses/by_page/${pageNumber}?language=${DEFAULT_LANGUAGE}&words=true&translations=${DEFAULT_TRANSLATION_ID}&fields=text_uthmani`
   );
-  if (!res.ok) throw new Error('Failed to fetch verses by page');
+  if (!res.ok) throw new Error("Failed to fetch verses by page");
   return res.json();
 }
 
-export async function getVersesByJuz(juzNumber: number | string): Promise<VersesResponse> {
+export async function getVersesByJuz(
+  juzNumber: number | string
+): Promise<VersesResponse> {
   const res = await fetch(
     `${API_BASE_URL}/verses/by_juz/${juzNumber}?language=${DEFAULT_LANGUAGE}&words=true&translations=${DEFAULT_TRANSLATION_ID}&fields=text_uthmani`
   );
-  if (!res.ok) throw new Error('Failed to fetch verses by juz');
+  if (!res.ok) throw new Error("Failed to fetch verses by juz");
   return res.json();
 }
 
 export async function getTafsir(ayahKey: string): Promise<TafsirResponse> {
   try {
-    const [surahId, verseNum] = ayahKey.split(':');
-    
+    const [surahId, verseNum] = ayahKey.split(":");
+
     // Fetch full surah data from Rioastamal (reliable source)
     const res = await fetch(`${RIOASTAMAL_URL}/surah/${surahId}.json`);
-    if (!res.ok) throw new Error('Failed to fetch tafsir source');
-    
+    if (!res.ok) throw new Error("Failed to fetch tafsir source");
+
     const data = await res.json();
     const surahData = data[surahId];
-    
+
     // Rioastamal structure: surahData.tafsir.id.kemenag.text[verseNum]
     // Use optional chaining carefully
     const tafsirText = surahData?.tafsir?.id?.kemenag?.text?.[verseNum];
 
     if (!tafsirText) {
-       throw new Error('Tafsir not found for this verse');
+      throw new Error("Tafsir not found for this verse");
     }
 
     // Return in the format expected by the UI (TafsirResponse)
@@ -111,10 +155,10 @@ export async function getTafsir(ayahKey: string): Promise<TafsirResponse> {
         id: 33, // Kemenag ID
         resource_id: 33,
         text: tafsirText,
-      }
+      },
     } as unknown as TafsirResponse;
   } catch (error) {
     console.error("Tafsir fetch error:", error);
-    throw new Error('Gagal memuat tafsir.');
+    throw new Error("Gagal memuat tafsir.");
   }
 }
