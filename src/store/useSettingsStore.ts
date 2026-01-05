@@ -20,6 +20,7 @@ interface SettingsState {
     ayahNumber?: number;
     pageId?: number;
   } | null;
+  fontFamily: string;
 
   // Actions
   setArabicFontSize: (size: number) => void;
@@ -27,6 +28,7 @@ interface SettingsState {
   setShowWordByWord: (show: boolean) => void;
   setSelectedQari: (qariId: string, qari: Qari) => void;
   setLastRead: (lastRead: SettingsState["lastRead"]) => void;
+  setFontFamily: (font: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -43,6 +45,7 @@ export const useSettingsStore = create<SettingsState>()(
         reciter_id: "Alafasy_64kbps",
       },
       lastRead: null,
+      fontFamily: "uthman-hafs",
 
       setArabicFontSize: (size) => set({ arabicFontSize: size }),
       setTranslationFontSize: (size) => set({ translationFontSize: size }),
@@ -50,6 +53,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSelectedQari: (qariId, qari) =>
         set({ selectedQariId: qariId, selectedQari: qari }),
       setLastRead: (lastRead) => set({ lastRead }),
+      setFontFamily: (font) => set({ fontFamily: font }),
     }),
     {
       name: "lumina-quran-settings",

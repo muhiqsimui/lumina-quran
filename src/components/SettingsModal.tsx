@@ -31,6 +31,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     selectedQariId,
     selectedQari,
     setSelectedQari,
+    fontFamily,
+    setFontFamily,
   } = useSettingsStore();
 
   const [qaris, setQaris] = useState<Qari[]>([]);
@@ -40,6 +42,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { id: "light", label: "Terang", icon: Sun },
     { id: "dark", label: "Gelap", icon: Moon },
     { id: "system", label: "Sistem", icon: Monitor },
+  ];
+  
+  const fonts = [
+    { id: "uthman-hafs", label: "Uthmanic Hafs", fontClass: "font-hafs" },
+    { id: "lpmq", label: "Isep Misbah (LPMQ)", fontClass: "font-lpmq" },
+    { id: "uthman-naskh", label: "Uthman Taha Naskh", fontClass: "font-naskh" },
   ];
 
   // Reciters dari EveryAyah API - verified working dengan 64kbps bitrate
@@ -194,6 +202,41 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   In the name of Allah...
                 </p>
               </div>
+            </div>
+          </section>
+
+          {/* Font Selection Section */}
+          <section className="space-y-4 border-t border-border pt-4">
+            <div className="flex items-center gap-2">
+              <Type className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-sm">Jenis Font Arab</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2">
+              {fonts.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFontFamily(f.id)}
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-lg border transition-all text-left",
+                    fontFamily === f.id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border bg-background hover:bg-accent"
+                  )}
+                >
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium block">{f.label}</span>
+                    <span className={cn(f.fontClass, "text-xl")} dir="rtl">
+                      بِسْمِ اللَّهِ
+                    </span>
+                  </div>
+                  {fontFamily === f.id && (
+                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           </section>
 

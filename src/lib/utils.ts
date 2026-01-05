@@ -13,8 +13,18 @@ export function normalizeQuranText(text: string): string {
   // resulting in overlapping marks (tertimpa).
   let normalized = text.replace(/\u064E\u0670/g, '\u0670');
 
-  // 2. Fix the "redundant" marks in other combinations if any
-  // Some fonts also struggle with Shadda + other vowel orders
-  
   return normalized;
+}
+
+export function getArabicFontClass(fontId: string): string {
+  switch (fontId) {
+    case "uthman-hafs":
+      return "font-hafs";
+    case "uthman-naskh":
+      return "font-naskh";
+    case "lpmq":
+      return "font-lpmq";
+    default:
+      return "font-hafs";
+  }
 }

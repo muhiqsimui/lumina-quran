@@ -1,6 +1,6 @@
 import { SearchParams } from "@/types";
 import { getVersesLocal, getChaptersLocal } from "@/lib/quran-service";
-import { normalizeQuranText } from "@/lib/utils";
+import { normalizeQuranText, cn } from "@/lib/utils";
 import { VerseList } from "@/components/quran/VerseList";
 import { FloatingControls } from "@/components/quran/FloatingControls";
 import { ChevronLeft } from "lucide-react";
@@ -69,12 +69,12 @@ export default async function SurahPage({ params, searchParams }: SurahPageProps
             </p>
           </div>
 
-          <div className="font-lpmq text-5xl sm:text-6xl text-primary py-4 sm:py-6 drop-shadow-sm">
+          <div className="font-arabic text-5xl sm:text-6xl text-primary py-4 sm:py-6 drop-shadow-sm">
             {normalizeQuranText(chapter.name_arabic)}
           </div>
 
           {chapter.bismillah_pre && (
-            <div className="font-lpmq text-3xl sm:text-5xl text-foreground/80 pt-8 pb-6 sm:pt-16 sm:pb-12 border-t border-border/50 w-full mt-6 sm:mt-8 leading-relaxed text-center flex justify-center items-center">
+            <div className="font-arabic text-3xl sm:text-5xl text-foreground/80 pt-8 pb-6 sm:pt-16 sm:pb-12 border-t border-border/50 w-full mt-6 sm:mt-8 leading-relaxed text-center flex justify-center items-center">
               <span className="inline-block h-auto py-2">
                 {" "}
                 {normalizeQuranText("بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ")}{" "}

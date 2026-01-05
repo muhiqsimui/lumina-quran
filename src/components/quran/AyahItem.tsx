@@ -1,5 +1,5 @@
 import { Verse } from "@/types";
-import { cn, normalizeQuranText } from "@/lib/utils";
+import { cn, normalizeQuranText, getArabicFontClass } from "@/lib/utils";
 import { Play, BookOpen, Bookmark } from "lucide-react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
@@ -22,8 +22,10 @@ export function AyahItem({
   onTafsir,
   onBookmark,
 }: AyahItemProps) {
-  const { arabicFontSize, translationFontSize, showWordByWord } =
+  const { arabicFontSize, translationFontSize, showWordByWord, fontFamily } =
     useSettingsStore();
+
+  const fontClass = getArabicFontClass(fontFamily);
 
   return (
     <div
@@ -76,7 +78,10 @@ export function AyahItem({
 
         <div className="text-right w-full overflow-visible">
           <div
-            className="font-lpmq leading-[2.5] md:leading-[3.0] text-foreground tracking-normal text-right antialiased py-6"
+            className={cn(
+              fontClass,
+              "leading-[2.5] md:leading-[3.0] text-foreground tracking-normal text-right antialiased py-6"
+            )}
             dir="rtl"
             style={{ 
               fontSize: `${arabicFontSize}px`,
@@ -95,7 +100,10 @@ export function AyahItem({
             {verse.words.map((word) => (
               <div key={word.id} className="group/word relative">
                 <span
-                  className="font-arabic text-foreground/80 group-hover/word:text-primary transition-colors cursor-default leading-[2.5]"
+                  className={cn(
+                    fontClass,
+                    "text-foreground/80 group-hover/word:text-primary transition-colors cursor-default leading-[2.5]"
+                  )}
                   style={{ 
                     fontSize: `${arabicFontSize * 0.75}px`,
                     fontFeatureSettings: '"rlig" 1, "calt" 1, "liga" 1',

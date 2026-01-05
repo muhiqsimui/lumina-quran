@@ -8,6 +8,7 @@ import { useAudioStore } from "@/store/useAudioStore";
 import { useBookmarkStore } from "@/store/useBookmarkStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useScrollToAyah } from "@/hooks/useScrollToAyah";
+import { getArabicFontClass, cn } from "@/lib/utils";
 
 interface JuzVerseListProps {
   verses: Verse[];
@@ -17,7 +18,8 @@ interface JuzVerseListProps {
 
 export function JuzVerseList({ verses, chapters, juzId }: JuzVerseListProps) {
   const [activeTafsir, setActiveTafsir] = useState<string | null>(null);
-  const { selectedQari, setLastRead } = useSettingsStore();
+  const { selectedQari, setLastRead, fontFamily } = useSettingsStore();
+  const fontClass = getArabicFontClass(fontFamily);
   const { setAudio, currentAyah, setNavigationCallbacks } = useAudioStore();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarkStore();
 
@@ -172,7 +174,7 @@ export function JuzVerseList({ verses, chapters, juzId }: JuzVerseListProps) {
                          </div>
                     </div>
                     {showBismillah && (
-                        <div className="text-center font-lpmq text-2xl sm:text-3xl mt-6 mb-4 text-black/80">
+                        <div className={cn(fontClass, "text-center text-2xl sm:text-3xl mt-6 mb-4 text-black/80")}>
                             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                         </div>
                     )}

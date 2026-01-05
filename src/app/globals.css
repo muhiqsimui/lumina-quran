@@ -113,13 +113,19 @@
 }
 
 @layer utilities {
-  .font-arabic {
-    font-family: "LPMQ Isep Misbah", "Uthman Hafs", serif;
+  .font-arabic,
+  .font-hafs {
+    font-family: "Uthman Hafs", serif;
     text-rendering: optimizeLegibility;
     font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
   }
   .font-lpmq {
     font-family: "LPMQ Isep Misbah", serif;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
+  }
+  .font-naskh {
+    font-family: "Uthman Naskh", serif;
     text-rendering: optimizeLegibility;
     font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
   }

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { SearchResult } from '@/types';
 import { Book, ChevronRight } from 'lucide-react';
-import { normalizeQuranText } from '@/lib/utils';
+import { normalizeQuranText, getArabicFontClass, cn } from '@/lib/utils';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 interface SearchResultItemProps {
   result: SearchResult;
@@ -11,6 +12,8 @@ interface SearchResultItemProps {
 
 export function SearchResultItem({ result }: SearchResultItemProps) {
   const [surahId, ayahNumber] = result.verse_key.split(':');
+  const { fontFamily } = useSettingsStore();
+  const fontClass = getArabicFontClass(fontFamily);
   
   // Clean translation text from HTML tags (like <em>) if any, but dangerouslySetInnerHTML is safer for highlights
   const mainTranslation = result.translations[0]?.text || '';
@@ -29,7 +32,7 @@ export function SearchResultItem({ result }: SearchResultItemProps) {
           
           <div className="space-y-4">
             <p 
-              className="text-right font-arabic text-2xl leading-loose"
+              className={cn(fontClass, "text-right text-2xl leading-loose")}
               dir="rtl"
             >
               {normalizeQuranText(result.text)}
