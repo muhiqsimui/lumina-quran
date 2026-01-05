@@ -72,9 +72,17 @@ export const useDzikirStore = create<DzikirState>()(
 
       toggleAssist: () => set((state) => ({ isAssistActive: !state.isAssistActive })),
 
-      setAssistCategory: (categoryId) => set({ assistCategoryId: categoryId, activeDzikirId: null, counter: 0 }),
+      setAssistCategory: (categoryId) => set({ 
+        assistCategoryId: categoryId, 
+        activeDzikirId: null, 
+        counter: 0,
+        isAssistActive: true 
+      }),
 
-      setAssistDzikir: (dzikirId) => set({ activeDzikirId: dzikirId, counter: 0 }),
+      setAssistDzikir: (dzikirId) => set({ 
+        activeDzikirId: dzikirId, 
+        counter: 0 
+      }),
     }),
     {
       name: "dzikir-storage",

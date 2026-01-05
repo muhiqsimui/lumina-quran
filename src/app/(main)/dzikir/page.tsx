@@ -50,11 +50,20 @@ export default function DzikirPage() {
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [isAssistModalOpen, setIsAssistModalOpen] = useState(false);
+  const [showFinishedModal, setShowFinishedModal] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // Get current assist data
   const currentCategory = DZIKIR_DATA.find((c) => c.id === assistCategoryId);
-  const currentDzikirItem = currentCategory?.items.find((i) => i.id === activeDzikirId) || currentCategory?.items[0];
+  const currentDzikirItem =
+    currentCategory?.items.find((i) => i.id === activeDzikirId) ||
+    currentCategory?.items[0];
+
+  const currentIndex = currentCategory
+    ? currentCategory.items.indexOf(currentDzikirItem as DzikirItem)
+    : -1;
+  const isLastItem =
+    currentCategory && currentIndex === currentCategory.items.length - 1;
 
   // Initialize target based on mode/assist
   useEffect(() => {
@@ -81,20 +90,23 @@ export default function DzikirPage() {
     return audioContextRef.current;
   };
 
-  const playBeep = (freq = 440, duration = 0.1) => {
+  const playBeep = (freq = 440, duration = 0.1, type: OscillatorType = "sine") => {
     if (!soundOn) return;
     try {
       const ctx = getAudioContext();
       if (ctx.state === "suspended") ctx.resume();
-      
+
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
-      oscillator.type = "sine";
+      oscillator.type = type;
       oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-      
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.0001,
+        ctx.currentTime + duration
+      );
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);
@@ -106,39 +118,57 @@ export default function DzikirPage() {
     }
   };
 
+  const handleNextAssist = () => {
+    if (!currentCategory || !currentDzikirItem) return;
+    const nextItem = currentCategory.items[currentIndex + 1];
+    if (nextItem) {
+      setAssistDzikir(nextItem.id);
+      reset();
+      // Play a transition sound
+      playBeep(660, 0.1, "triangle");
+      if (navigator.vibrate) navigator.vibrate(40);
+    } else {
+      // Category finished!
+      setShowFinishedModal(true);
+      playBeep(880, 0.5, "triangle");
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+    }
+  };
+
   const handleIncrement = () => {
+    // If target already reached in assist mode, the next click moves forward
+    if (isAssistActive && counter >= target) {
+      handleNextAssist();
+      return;
+    }
+
     increment();
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 100);
 
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-
-    // Sound feedback
     const nextCount = counter + 1;
-    if (nextCount === target) {
-      playBeep(880, 0.3); // Target reached!
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-      
-      // Auto transition in assist mode if requested or just let user click next
-    } else {
-      playBeep(440, 0.05);
-    }
-  };
 
-  const handleNextAssist = () => {
-    if (!currentCategory || !currentDzikirItem) return;
-    const currentIndex = currentCategory.items.indexOf(currentDzikirItem);
-    const nextItem = currentCategory.items[currentIndex + 1];
-    if (nextItem) {
-      setAssistDzikir(nextItem.id);
+    // Feedback
+    if (nextCount === target) {
+      // Target reached!
+      playBeep(880, 0.3, "triangle");
+      
+      if (navigator.vibrate) {
+        if (isAssistActive && isLastItem) {
+          navigator.vibrate([200, 100, 200, 100, 200, 100, 500]);
+        } else {
+          navigator.vibrate([100, 50, 100]);
+        }
+      }
+    } else if (nextCount > target && mode === "cycle" && !isAssistActive) {
+      // Transition in cycle mode
+      playBeep(660, 0.1, "triangle");
+      if (navigator.vibrate) navigator.vibrate(60);
     } else {
-      // Loop or finish? Let's just reset to first for now
-      setAssistDzikir(currentCategory.items[0].id);
+      // Regular click
+      playBeep(440, 0.05, "sine");
+      if (navigator.vibrate) navigator.vibrate(40);
     }
-    reset();
   };
 
   // Pulse effect when target reached
@@ -358,7 +388,7 @@ export default function DzikirPage() {
                    <h2 className="text-lg font-bold">Pengaturan Assist</h2>
                 </div>
                 <button onClick={() => setIsAssistModalOpen(false)} className="p-2 hover:bg-accent rounded-full">
-                  <X className="w-5 h-5" />
+                   <X className="w-5 h-5" />
                 </button>
              </div>
              
@@ -414,6 +444,43 @@ export default function DzikirPage() {
                   Selesai
                 </button>
              </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finished Modal */}
+      {showFinishedModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-500">
+          <div className="w-full max-w-sm bg-card border border-primary/20 rounded-[3rem] shadow-2xl p-8 text-center space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Sparkles className="w-10 h-10 text-primary animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">Masa Allah!</h2>
+              <p className="text-muted-foreground">Anda telah menyelesaikan seluruh rangkaian dzikir ini.</p>
+            </div>
+            <div className="pt-4  space-y-3">
+              <button 
+                onClick={() => {
+                  setShowFinishedModal(false);
+                  setAssistDzikir(currentCategory?.items[0].id || null);
+                  reset();
+                }}
+                className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-bold shadow-xl shadow-primary/20 flex items-center justify-center gap-2 active:scale-95 transition-all"
+              >
+                <RefreshCw className="w-5 h-5" />
+                Ulangi Kategori
+              </button>
+              <button 
+                onClick={() => {
+                  setShowFinishedModal(false);
+                  toggleAssist();
+                }}
+                className="w-full py-4 bg-secondary text-secondary-foreground rounded-2xl font-bold hover:bg-accent transition-all"
+              >
+                Selesai
+              </button>
+            </div>
           </div>
         </div>
       )}
