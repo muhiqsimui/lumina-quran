@@ -163,11 +163,49 @@ export async function getVersesByPage(
 export async function getVersesByJuz(
   juzNumber: number | string
 ): Promise<VersesResponse> {
+  // 1. Fetch structure from Quran.com
   const res = await fetch(
-    `${API_BASE_URL}/verses/by_juz/${juzNumber}?language=${DEFAULT_LANGUAGE}&words=true&translations=${DEFAULT_TRANSLATION_ID}&fields=text_uthmani`
+    `${API_BASE_URL}/verses/by_juz/${juzNumber}?language=${DEFAULT_LANGUAGE}&words=true&translations=${DEFAULT_TRANSLATION_ID}`
   );
   if (!res.ok) throw new Error("Failed to fetch verses by juz");
-  return res.json();
+  const data = await res.json();
+
+  // 2. Identify unique chapters
+  const chapterIds = new Set<number>();
+  data.verses.forEach((v: any) => {
+    const chapterId = parseInt(v.verse_key.split(":")[0]);
+    chapterIds.add(chapterId);
+  });
+
+  // 3. Fetch Rioastamal text
+  const chapterTexts: Record<number, Record<string, string>> = {};
+  await Promise.all(
+    Array.from(chapterIds).map(async (chapterId) => {
+      try {
+        const rRes = await fetch(`${RIOASTAMAL_URL}/surah/${chapterId}.json`);
+        if (rRes.ok) {
+          const rData = await rRes.json();
+          chapterTexts[chapterId] = rData[String(chapterId)].text;
+        }
+      } catch (e) {
+        console.error(`Failed to fetch Rioastamal text for chapter ${chapterId}`, e);
+      }
+    })
+  );
+
+  // 4. Map text
+  data.verses = data.verses.map((v: any) => {
+    const [chapterIdStr, verseNumStr] = v.verse_key.split(":");
+    const chapterId = parseInt(chapterIdStr);
+    const rioastamalText = chapterTexts[chapterId]?.[verseNumStr];
+    
+    return {
+      ...v,
+      text_uthmani: rioastamalText || v.text_uthmani
+    };
+  });
+
+  return data;
 }
 
 export async function getTafsir(ayahKey: string): Promise<TafsirResponse> {

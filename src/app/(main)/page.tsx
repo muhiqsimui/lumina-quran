@@ -33,6 +33,13 @@ const menuItems = [
     color: "bg-amber-500/10 text-amber-600",
   },
   {
+    title: "Baca per Juz",
+    description: "Daftar Juz 1 sampai 30",
+    icon: Layers, // Reusing Layers or similar, maybe import Scroll?
+    href: "/juz",
+    color: "bg-indigo-500/10 text-indigo-600",
+  },
+  {
     title: "Dzikir & Tasbih",
     description: "Hitung dzikir dengan mode bantu & siklus",
     icon: CircleDot,
