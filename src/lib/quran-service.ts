@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ChaptersResponse, VersesResponse, Verse, SearchResponse, SearchResult } from '@/types';
 import { API_BASE_URL, DEFAULT_LANGUAGE, DEFAULT_TRANSLATION_ID } from './constants';
+import { MushafMode } from '@/store/useSettingsStore';
 
 // Helper to read JSON
 async function readJson(relativePath: string) {
@@ -13,6 +14,17 @@ async function readJson(relativePath: string) {
     return JSON.parse(content);
   } catch (error) {
     console.error(`Error reading ${filePath}`, error);
+    return null;
+  }
+}
+
+async function readKemenagJson(chapterId: number | string) {
+  const filePath = path.resolve(process.cwd(), 'data', 'Al-Quran-JSON-Indonesia-Kemenag', 'Surat', `${chapterId}.json`);
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error(`Error reading Kemenag ${filePath}`, error);
     return null;
   }
 }
@@ -40,16 +52,56 @@ export async function getChaptersLocal(): Promise<ChaptersResponse> {
   };
 }
 
-export async function getVersesLocal(chapterId: number | string): Promise<VersesResponse> {
+export async function getVersesLocal(chapterId: number | string, mode: MushafMode = 'kemenag'): Promise<VersesResponse> {
   const idStr = String(chapterId);
-  const data = await readJson(`chapters/id/${idStr}.json`);
   
+  if (mode === 'kemenag') {
+    const data = await readKemenagJson(idStr);
+    if (!data) return getVersesUthmani(idStr); // Fallback to Uthmani
+
+    const verses: Verse[] = data.data.map((v: any) => ({
+      id: parseInt(`${idStr}${v.aya_number}`),
+      verse_number: v.aya_number,
+      verse_key: `${idStr}:${v.aya_number}`,
+      text_uthmani: v.aya_text,
+      hizb_number: 0,
+      rub_el_hizb_number: 0,
+      ruku_number: 0,
+      manzil_number: 0,
+      sajdah_number: null,
+      juz_number: v.juz_id || 0,
+      page_number: v.page_number || 0,
+      translations: [{
+        id: DEFAULT_TRANSLATION_ID,
+        resource_id: DEFAULT_TRANSLATION_ID,
+        text: v.translation_aya_text.replace(/<[^>]*>?/gm, '') // Strip HTML tags
+      }],
+      words: []
+    }));
+
+    return { 
+      verses, 
+      pagination: { 
+        per_page: verses.length, 
+        current_page: 1, 
+        next_page: null, 
+        total_pages: 1, 
+        total_records: verses.length 
+      } 
+    };
+  }
+
+  return getVersesUthmani(idStr);
+}
+
+async function getVersesUthmani(chapterId: string): Promise<VersesResponse> {
+  const data = await readJson(`chapters/id/${chapterId}.json`);
   if (!data) throw new Error('Chapter not found locally');
 
   const verses: Verse[] = data.verses.map((v: any) => ({
-    id: parseInt(`${idStr}${v.id}`), 
+    id: parseInt(`${chapterId}${v.id}`), 
     verse_number: v.id,
-    verse_key: `${idStr}:${v.id}`,
+    verse_key: `${chapterId}:${v.id}`,
     text_uthmani: v.text, 
     hizb_number: 0,
     rub_el_hizb_number: 0,
@@ -66,7 +118,16 @@ export async function getVersesLocal(chapterId: number | string): Promise<Verses
     words: []
   }));
 
-  return { verses, pagination: { per_page: verses.length, current_page: 1, next_page: null, total_pages: 1, total_records: verses.length } };
+  return { 
+    verses, 
+    pagination: { 
+      per_page: verses.length, 
+      current_page: 1, 
+      next_page: null, 
+      total_pages: 1, 
+      total_records: verses.length 
+    } 
+  };
 }
 
 export async function getVersesByPageLocal(pageNumber: number | string): Promise<VersesResponse> {
@@ -112,7 +173,7 @@ const JUZ_STARTS: Record<number, { c: number, v: number }> = {
   30: { c: 78, v: 1 },
 };
 
-export async function getVersesByJuzLocal(juzNumber: number | string): Promise<VersesResponse> {
+export async function getVersesByJuzLocal(juzNumber: number | string, mode: MushafMode = 'kemenag'): Promise<VersesResponse> {
   const juz = typeof juzNumber === 'string' ? parseInt(juzNumber) : juzNumber;
   
   const start = JUZ_STARTS[juz];
@@ -133,7 +194,7 @@ export async function getVersesByJuzLocal(juzNumber: number | string): Promise<V
       verse_number: currentV,
       verse_key: `${currentC}:${currentV}`,
       juz_number: juz,
-      page_number: Math.min(604, Math.max(1, Math.ceil(juz * 20.13))) // Approximate page number
+      page_number: Math.min(604, Math.max(1, Math.ceil(juz * 20.13)))
     });
 
     currentV++;
@@ -144,11 +205,11 @@ export async function getVersesByJuzLocal(juzNumber: number | string): Promise<V
     }
   }
   
-  return await hydrateVerses(structuralVerses);
+  return await hydrateVerses(structuralVerses, mode);
 }
 
 
-async function hydrateVerses(structuralVerses: any[]): Promise<VersesResponse> {
+async function hydrateVerses(structuralVerses: any[], mode: MushafMode = 'kemenag'): Promise<VersesResponse> {
   const chapterIds = new Set<number>();
   structuralVerses.forEach((v: any) => {
     const cid = parseInt(v.verse_key.split(':')[0]);
@@ -157,8 +218,13 @@ async function hydrateVerses(structuralVerses: any[]): Promise<VersesResponse> {
 
   const chapterCache: Record<number, any> = {};
   await Promise.all(Array.from(chapterIds).map(async (cid) => {
-     const cData = await readJson(`chapters/id/${cid}.json`);
-     if(cData) chapterCache[cid] = cData;
+     if (mode === 'kemenag') {
+        const cData = await readKemenagJson(cid);
+        if(cData) chapterCache[cid] = cData;
+     } else {
+        const cData = await readJson(`chapters/id/${cid}.json`);
+        if(cData) chapterCache[cid] = cData;
+     }
   }));
 
   const verses: Verse[] = structuralVerses.map((v: any) => {
@@ -166,19 +232,34 @@ async function hydrateVerses(structuralVerses: any[]): Promise<VersesResponse> {
     const cid = parseInt(cidStr);
     const vid = parseInt(vidStr);
     
-    const localVerse = chapterCache[cid]?.verses.find((lv: any) => lv.id === vid);
-    
-    if (localVerse) {
-       return {
-         ...v,
-         text_uthmani: localVerse.text,
-         translations: [{
-            id: DEFAULT_TRANSLATION_ID,
-            resource_id: DEFAULT_TRANSLATION_ID,
-            text: localVerse.translation
-         }],
-         words: []
-       };
+    if (mode === 'kemenag') {
+        const localVerse = chapterCache[cid]?.data.find((lv: any) => lv.aya_number === vid);
+        if (localVerse) {
+            return {
+              ...v,
+              text_uthmani: localVerse.aya_text,
+              translations: [{
+                 id: DEFAULT_TRANSLATION_ID,
+                 resource_id: DEFAULT_TRANSLATION_ID,
+                 text: localVerse.translation_aya_text.replace(/<[^>]*>?/gm, '')
+              }],
+              words: []
+            };
+        }
+    } else {
+        const localVerse = chapterCache[cid]?.verses.find((lv: any) => lv.id === vid);
+        if (localVerse) {
+           return {
+             ...v,
+             text_uthmani: localVerse.text,
+             translations: [{
+                id: DEFAULT_TRANSLATION_ID,
+                resource_id: DEFAULT_TRANSLATION_ID,
+                text: localVerse.translation
+             }],
+             words: []
+           };
+        }
     }
     return v;
   });
@@ -206,8 +287,7 @@ export async function searchVersesLocal(query: string): Promise<SearchResponse> 
      const matches = cData.verses.filter((v: any) => {
          const trans = (v.translation || '').toLowerCase();
          const text = (v.text || ''); 
-         const translit = (v.transliteration || '').toLowerCase();
-         return trans.includes(queryLower) || text.includes(query) || translit.includes(queryLower);
+         return trans.includes(queryLower) || text.includes(query);
      }).map((v: any) => ({
          verse_key: `${cid}:${v.id}`,
          verse_id: parseInt(`${cid}${v.id}`),

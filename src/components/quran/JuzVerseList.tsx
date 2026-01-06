@@ -18,11 +18,41 @@ interface JuzVerseListProps {
 
 export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVerseListProps) {
   const [activeTafsir, setActiveTafsir] = useState<string | null>(null);
-  const { selectedQari, setLastRead, fontFamily } = useSettingsStore();
+  const { selectedQari, setLastRead, fontFamily, mushafMode } = useSettingsStore();
   const [verses, setVerses] = useState<Verse[]>(initialVerses);
+  const [loading, setLoading] = useState(false);
   const fontClass = getArabicFontClass(fontFamily);
   const { setAudio, currentAyah, setNavigationCallbacks } = useAudioStore();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarkStore();
+
+  const isInitialized = useRef(false);
+  const initialModeRef = useRef(mushafMode);
+
+  // Re-fetch verses when mushafMode changes
+  useEffect(() => {
+    if (mushafMode === initialModeRef.current && isInitialized.current) return;
+    if (!isInitialized.current) {
+        isInitialized.current = true;
+        if (mushafMode === 'kemenag') return;
+    }
+
+    const fetchVerses = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/juz/${juzId}?mode=${mushafMode}`);
+        if (res.ok) {
+          const data = await res.json();
+          setVerses(data.verses);
+        }
+      } catch (error) {
+        console.error("Failed to fetch alternative mushaf verses (juz)", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVerses();
+  }, [mushafMode, juzId]);
 
   useScrollToAyah(currentAyah);
 
@@ -50,7 +80,6 @@ export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVers
     );
   };
 
-  // Implement navigation callbacks for AudioBar to move to next/prev verse in this LIST
   useEffect(() => {
     const handleNextAyah = () => {
       const { repeatMode, isPlaying, currentSurah: playingChapterId, currentAyah: playingVerseNum } = useAudioStore.getState();
@@ -97,7 +126,6 @@ export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVers
     }
   };
 
-  // Intersection Observer to track "Last Read"
     useEffect(() => {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -139,24 +167,16 @@ export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVers
 
   return (
     <>
-      <div className="space-y-6">
+      <div className={cn("space-y-6 transition-opacity duration-300", loading && "opacity-50 pointer-events-none")}>
         {verses.map((verse, index) => {
           const chapterId = parseInt(verse.verse_key.split(":")[0]);
           const chapter = chapters.find((c) => c.id === chapterId);
           const isSurahStartInJuz = index === 0 || parseInt(verses[index - 1].verse_key.split(":")[0]) !== chapterId;
           const showHeader = isSurahStartInJuz;
-
-          // Bismillah logic: Show if text doesn't have it, AND it is NOT Surah 1 or 9.
-          // BUT, unlike Page view, we display full Ayat blocks. 
-          // AyahItem handles "Bismillah" inside the text usually.
-          // In "Verse List" mode (Surah view), Bismillah is usually a separate header *before* verse 1 if applicable.
-          // If we are showing a new Surah header, we should show Bismillah if applicable.
-          // Note: AyahItem renders `verse.text_uthmani`. If Bismillah is in text (Al-Fatihah), it shows.
-          // If not in text (most surahs), we might want to show it in the header.
           const showBismillah = showHeader && chapterId !== 1 && chapterId !== 9;
 
           return (
-            <div key={verse.id}>
+            <div key={`${mushafMode}-${verse.id}`}>
               {showHeader && (
                  <div className="w-full block mt-12 mb-8 animate-in slide-in-from-bottom-5 duration-700" dir="rtl">
                     <div className="w-full min-h-[80px] sm:h-28 bg-[url('/surah-header.png')] bg-contain bg-no-repeat bg-center flex flex-col items-center justify-center border-y border-black/5 relative py-2">
@@ -176,7 +196,6 @@ export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVers
                  </div>
               )}
               
-              {/* Assign data-verse-key for observer */}
               <div data-verse-key={verse.verse_key}>
                   <AyahItem
                     verse={verse}
@@ -194,6 +213,14 @@ export function JuzVerseList({ verses: initialVerses, chapters, juzId }: JuzVers
           );
         })}
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-background/20 backdrop-blur-[1px]">
+          <div className="bg-card border border-border px-4 py-2 rounded-full shadow-lg text-sm font-medium animate-pulse">
+            Mengganti Versi Mushaf...
+          </div>
+        </div>
+      )}
 
       <TafsirSheet
         ayahKey={activeTafsir}

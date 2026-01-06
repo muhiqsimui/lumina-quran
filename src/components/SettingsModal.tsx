@@ -1,8 +1,8 @@
 "use client";
 
-import { useSettingsStore } from "@/store/useSettingsStore";
+import { useSettingsStore, MushafMode } from "@/store/useSettingsStore";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Monitor, Type, Eye, Volume2, X } from "lucide-react";
+import { Moon, Sun, Monitor, Type, Eye, Volume2, X, Book } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -29,10 +29,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     showWordByWord,
     setShowWordByWord,
     selectedQariId,
-    selectedQari,
     setSelectedQari,
     fontFamily,
     setFontFamily,
+    showTranslation,
+    setShowTranslation,
+    mushafMode,
+    setMushafMode,
   } = useSettingsStore();
 
   const [qaris, setQaris] = useState<Qari[]>([]);
@@ -45,12 +48,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   ];
   
   const fonts = [
-    { id: "uthman-hafs", label: "Uthmanic Hafs", fontClass: "font-hafs" },
-    { id: "lpmq", label: "Isep Misbah (LPMQ)", fontClass: "font-lpmq" },
-    { id: "uthman-naskh", label: "Uthman Taha Naskh", fontClass: "font-naskh" },
+    { id: "lpmq", label: "LPMQ (Standar Kemenag RI)" },
+    { id: "amiri", label: "Amiri (Naskh Style)" },
+    { id: "uthman-hafs", label: "Uthmanic Hafs" },
+    { id: "uthman-naskh", label: "Uthman Taha Naskh" },
   ];
 
-  // Reciters dari EveryAyah API - verified working dengan 64kbps bitrate
+  const mushafOptions = [
+    { id: "kemenag", label: "Kemenag RI (Indonesian Standard)" },
+    { id: "uthmani", label: "Uthmani (Madinah Style)" },
+  ];
+
   const qaris128kbps = [
     {
       id: "Alafasy_64kbps",
@@ -72,13 +80,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     },
   ];
 
-  // Initialize with 128kbps qaris
   useEffect(() => {
     setQaris(qaris128kbps);
     setLoading(false);
   }, []);
 
-  // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -101,15 +107,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="fixed inset-4 sm:inset-auto sm:right-4 sm:top-16 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col max-h-[90vh] sm:max-h-[calc(100vh-100px)] overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-card z-10">
           <h1 className="text-xl font-bold">Pengaturan</h1>
           <button
@@ -120,10 +123,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto space-y-6 p-6">
-          {/* Theme Section */}
+        <div className="flex-1 overflow-y-auto space-y-6 p-6 font-sans">
+          {/* Mushaf Selection */}
           <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Book className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-sm">Versi Mushaf</h2>
+            </div>
+            
+            <select
+              value={mushafMode}
+              onChange={(e) => setMushafMode(e.target.value as MushafMode)}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
+            >
+              {mushafOptions.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          <section className="space-y-4 border-t border-border pt-4">
             <div className="flex items-center gap-2">
               <Monitor className="w-5 h-5 text-primary" />
               <h2 className="font-semibold text-sm">Tema Aplikasi</h2>
@@ -147,7 +168,25 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </section>
 
-          {/* Font Size Section */}
+          <section className="space-y-4 border-t border-border pt-4">
+            <div className="flex items-center gap-2">
+              <Type className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-sm">Jenis Font Arab</h2>
+            </div>
+            
+            <select
+              value={fontFamily}
+              onChange={(e) => setFontFamily(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
+            >
+              {fonts.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </section>
+
           <section className="space-y-4 border-t border-border pt-4">
             <div className="flex items-center gap-2">
               <Type className="w-5 h-5 text-primary" />
@@ -170,12 +209,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   onChange={(e) => setArabicFontSize(Number(e.target.value))}
                   className="w-full accent-primary h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                 />
-                <div
-                  className="p-3 bg-muted/30 rounded-lg text-center font-arabic text-sm"
-                  style={{ fontSize: `${Math.min(arabicFontSize, 32)}px` }}
-                >
-                  بِسْمِ اللّٰهِ
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -195,52 +228,59 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   }
                   className="w-full accent-primary h-2 bg-secondary rounded-lg appearance-none cursor-pointer"
                 />
-                <p
-                  style={{ fontSize: `${translationFontSize}px` }}
-                  className="text-center px-2 text-muted-foreground"
-                >
-                  In the name of Allah...
-                </p>
               </div>
             </div>
           </section>
 
-          {/* Font Selection Section */}
           <section className="space-y-4 border-t border-border pt-4">
             <div className="flex items-center gap-2">
-              <Type className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-sm">Jenis Font Arab</h2>
+              <Eye className="w-5 h-5 text-primary" />
+              <h2 className="font-semibold text-sm">Tampilan</h2>
             </div>
-            
-            <div className="grid grid-cols-1 gap-2">
-              {fonts.map((f) => (
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium">Kata per Kata</div>
+                </div>
                 <button
-                  key={f.id}
-                  onClick={() => setFontFamily(f.id)}
+                  onClick={() => setShowWordByWord(!showWordByWord)}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg border transition-all text-left",
-                    fontFamily === f.id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                      : "border-border bg-background hover:bg-accent"
+                    "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                    showWordByWord ? "bg-primary" : "bg-muted"
                   )}
                 >
-                  <div className="space-y-1">
-                    <span className="text-xs font-medium block">{f.label}</span>
-                    <span className={cn(f.fontClass, "text-xl")} dir="rtl">
-                      بِسْمِ اللَّهِ
-                    </span>
-                  </div>
-                  {fontFamily === f.id && (
-                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                    </div>
-                  )}
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                      showWordByWord ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
                 </button>
-              ))}
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
+                <div className="space-y-0.5">
+                  <div className="text-sm font-medium">Terjemahan</div>
+                </div>
+                <button
+                  onClick={() => setShowTranslation(!showTranslation)}
+                  className={cn(
+                    "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                    showTranslation ? "bg-primary" : "bg-muted"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                      showTranslation ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
           </section>
 
-          {/* Qori Section */}
           <section className="space-y-4 border-t border-border pt-4">
             <div className="flex items-center gap-2">
               <Volume2 className="w-5 h-5 text-primary" />
@@ -261,7 +301,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     setSelectedQari(qariId, qari);
                   }
                 }}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
               >
                 {qaris.map((qari) => (
                   <option key={qari.id} value={qari.id}>
@@ -272,41 +312,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </select>
             )}
           </section>
-
-          {/* Display Section */}
-          <section className="space-y-4 border-t border-border pt-4">
-            <div className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-primary" />
-              <h2 className="font-semibold text-sm">Tampilan</h2>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
-              <div className="space-y-0.5">
-                <div className="text-sm font-medium">Kata per Kata</div>
-                <div className="text-xs text-muted-foreground">
-                  Terjemahan setiap kata
-                </div>
-              </div>
-              <button
-                onClick={() => setShowWordByWord(!showWordByWord)}
-                className={cn(
-                  "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  showWordByWord ? "bg-primary" : "bg-muted"
-                )}
-              >
-                <span
-                  className={cn(
-                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                    showWordByWord ? "translate-x-4" : "translate-x-0"
-                  )}
-                />
-              </button>
-            </div>
-
-          </section>
         </div>
 
-        {/* Footer */}
         <div className="border-t border-border p-4 text-center text-xs text-muted-foreground bg-background/50 sticky bottom-0">
           Pengaturan disimpan otomatis ✓
         </div>

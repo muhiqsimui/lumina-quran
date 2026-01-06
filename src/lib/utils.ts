@@ -23,6 +23,8 @@ export function getArabicFontClass(fontId: string): string {
       return "font-naskh";
     case "lpmq":
       return "font-lpmq";
+    case "amiri":
+      return "font-amiri";
     default:
       return "font-hafs";
   }

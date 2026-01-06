@@ -8,6 +8,8 @@ interface Qari {
   reciter_id: string; // EveryAyah format: e.g., "Alafasy_64kbps"
 }
 
+export type MushafMode = "kemenag" | "uthmani";
+
 interface SettingsState {
   arabicFontSize: number;
   translationFontSize: number;
@@ -21,6 +23,8 @@ interface SettingsState {
     pageId?: number;
   } | null;
   fontFamily: string;
+  showTranslation: boolean;
+  mushafMode: MushafMode;
 
   // Actions
   setArabicFontSize: (size: number) => void;
@@ -29,6 +33,8 @@ interface SettingsState {
   setSelectedQari: (qariId: string, qari: Qari) => void;
   setLastRead: (lastRead: SettingsState["lastRead"]) => void;
   setFontFamily: (font: string) => void;
+  setShowTranslation: (show: boolean) => void;
+  setMushafMode: (mode: MushafMode) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -37,15 +43,17 @@ export const useSettingsStore = create<SettingsState>()(
       arabicFontSize: 32,
       translationFontSize: 16,
       showWordByWord: true,
-      selectedQariId: "Alafasy_64kbps", // Default: Mishary al-Afasy
+      selectedQariId: "Alafasy_64kbps",
       selectedQari: {
         id: "Alafasy_64kbps",
         name: "Mishary Rashid al-Afasy",
-        arabic_name: "مشاري راشد العفاسي",
+        arabic_name: "مشاري raashid العفاسي",
         reciter_id: "Alafasy_64kbps",
       },
       lastRead: null,
-      fontFamily: "uthman-hafs",
+      fontFamily: "lpmq",
+      showTranslation: true,
+      mushafMode: "kemenag", // Default to Kemenag as requested
 
       setArabicFontSize: (size) => set({ arabicFontSize: size }),
       setTranslationFontSize: (size) => set({ translationFontSize: size }),
@@ -54,6 +62,8 @@ export const useSettingsStore = create<SettingsState>()(
         set({ selectedQariId: qariId, selectedQari: qari }),
       setLastRead: (lastRead) => set({ lastRead }),
       setFontFamily: (font) => set({ fontFamily: font }),
+      setShowTranslation: (show) => set({ showTranslation: show }),
+      setMushafMode: (mode) => set({ mushafMode: mode }),
     }),
     {
       name: "lumina-quran-settings",

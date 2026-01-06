@@ -9,6 +9,7 @@ import { useBookmarkStore } from "@/store/useBookmarkStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useScrollToAyah } from "@/hooks/useScrollToAyah";
 import { useDebounce } from "@/hooks/useDebounce";
+import { cn } from "@/lib/utils";
 
 
 interface VerseListProps {
@@ -25,12 +26,12 @@ export function VerseList({
   highlightAyah 
 }: VerseListProps) {
   const [activeTafsir, setActiveTafsir] = useState<string | null>(null);
-  const { lastRead, setLastRead, selectedQari } = useSettingsStore();
+  const { lastRead, setLastRead, selectedQari, mushafMode } = useSettingsStore();
   const [verses, setVerses] = useState<Verse[]>(initialVerses);
+  const [loading, setLoading] = useState(false);
   
   // Initialize lastReadAyah from store if we're in the same chapter
   const [lastReadAyah, setLastReadAyah] = useState<number>(() => {
-    // During hydration, store might not be ready, but on client it might be
     return 1;
   });
 
@@ -38,7 +39,35 @@ export function VerseList({
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarkStore();
 
   const isInitialized = useRef(false);
+  const initialModeRef = useRef(mushafMode);
 
+  // Re-fetch verses when mushafMode changes, but skip initial render to prefer SSR
+  useEffect(() => {
+    if (mushafMode === initialModeRef.current && isInitialized.current) return;
+    if (!isInitialized.current) {
+        isInitialized.current = true;
+        // If initial SSR verses match current mode, don't refetch
+        // We assume SSR returns Kemenag by default
+        if (mushafMode === 'kemenag') return;
+    }
+
+    const fetchVerses = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/chapters/${chapterId}?mode=${mushafMode}`);
+        if (res.ok) {
+          const data = await res.json();
+          setVerses(data.verses);
+        }
+      } catch (error) {
+        console.error("Failed to fetch alternative mushaf verses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVerses();
+  }, [mushafMode, chapterId]);
 
   // Scroll to highlight or last read on mount
   useEffect(() => {
@@ -53,10 +82,8 @@ export function VerseList({
       return () => clearTimeout(timer);
     } else if (lastRead?.chapterId === chapterId && lastRead.ayahNumber) {
       setLastReadAyah(lastRead.ayahNumber);
-      // Native browser hash scroll might handle this if URL has #ayah-X
     }
-    isInitialized.current = true;
-  }, [chapterId, highlightAyah, lastRead]); // Re-run if store hydrates or highlight changes
+  }, [chapterId, highlightAyah, lastRead]);
 
   useScrollToAyah(currentAyah);
 
@@ -67,7 +94,6 @@ export function VerseList({
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        // Find the most visible ayah
         const visibleAyahs = entries
           .filter(e => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
@@ -82,12 +108,11 @@ export function VerseList({
       },
       {
         root: null,
-        rootMargin: '-25% 0px -25% 0px', // Focus on middle half of screen
+        rootMargin: '-25% 0px -25% 0px',
         threshold: [0, 0.1, 0.5, 0.9, 1.0],
       }
     );
 
-    // Observe all ayah elements after a short delay to ensure DOM is ready
     const timer = setTimeout(() => {
       const ayahElements = document.querySelectorAll('[data-verse-number]');
       ayahElements.forEach((element) => observer.observe(element));
@@ -101,7 +126,6 @@ export function VerseList({
 
   // Save debounced last read to persistent store
   useEffect(() => {
-    // Only save if it's not the initial '1' unless we're actually on ayah 1
     if (debouncedLastReadAyah === 1 && !isInitialized.current) return;
 
     setLastRead({
@@ -114,9 +138,11 @@ export function VerseList({
   // Register navigation callbacks for AudioBar
   useEffect(() => {
     const handleNextAyah = () => {
-      const { repeatMode, isPlaying } = useAudioStore.getState();
-      if (lastReadAyah < verses.length) {
-        const nextVerse = verses[lastReadAyah];
+      const { repeatMode, isPlaying, currentAyah: playingAyah } = useAudioStore.getState();
+      const referenceAyah = playingAyah || lastReadAyah;
+      
+      if (referenceAyah < verses.length) {
+        const nextVerse = verses[referenceAyah];
         handlePlay(nextVerse, isPlaying);
       } else if (repeatMode === "all") {
         handlePlay(verses[0], isPlaying);
@@ -124,9 +150,11 @@ export function VerseList({
     };
 
     const handlePrevAyah = () => {
-      const { isPlaying } = useAudioStore.getState();
-      if (lastReadAyah > 1) {
-        const prevVerse = verses[lastReadAyah - 2];
+      const { isPlaying, currentAyah: playingAyah } = useAudioStore.getState();
+      const referenceAyah = playingAyah || lastReadAyah;
+      
+      if (referenceAyah > 1) {
+        const prevVerse = verses[referenceAyah - 2];
         handlePlay(prevVerse, isPlaying);
       }
     };
@@ -169,10 +197,10 @@ export function VerseList({
 
   return (
     <>
-      <div className="space-y-6">
+      <div className={cn("space-y-6 transition-opacity duration-300", loading && "opacity-50 pointer-events-none")}>
         {verses.map((verse) => (
           <AyahItem
-            key={verse.id}
+            key={`${mushafMode}-${verse.id}`}
             verse={verse}
             isActive={currentAyah === verse.verse_number}
             isHighlighted={highlightAyah === verse.verse_number}
@@ -183,6 +211,14 @@ export function VerseList({
           />
         ))}
       </div>
+
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-background/20 backdrop-blur-[1px]">
+          <div className="bg-card border border-border px-4 py-2 rounded-full shadow-lg text-sm font-medium animate-pulse">
+            Mengganti Versi Mushaf...
+          </div>
+        </div>
+      )}
 
       <TafsirSheet
         ayahKey={activeTafsir}

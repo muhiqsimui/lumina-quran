@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -126,6 +127,11 @@
   }
   .font-naskh {
     font-family: "Uthman Naskh", serif;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
+  }
+  .font-amiri {
+    font-family: "Amiri", serif;
     text-rendering: optimizeLegibility;
     font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
   }

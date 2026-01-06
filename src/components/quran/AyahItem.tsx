@@ -22,8 +22,13 @@ export function AyahItem({
   onTafsir,
   onBookmark,
 }: AyahItemProps) {
-  const { arabicFontSize, translationFontSize, showWordByWord, fontFamily } =
-    useSettingsStore();
+  const { 
+    arabicFontSize, 
+    translationFontSize, 
+    showWordByWord, 
+    fontFamily,
+    showTranslation
+  } = useSettingsStore();
 
   const fontClass = getArabicFontClass(fontFamily);
 
@@ -94,7 +99,7 @@ export function AyahItem({
         </div>
       </div>
 
-      <div className="space-y-6 pt-4">
+      <div className="space-y-4 pt-4">
         {showWordByWord && verse.words && verse.words.length > 0 && (
           <div className="flex flex-wrap gap-3" dir="rtl">
             {verse.words.map((word) => (
@@ -120,12 +125,14 @@ export function AyahItem({
           </div>
         )}
 
-        <p
-          className="text-muted-foreground leading-relaxed pt-2"
-          style={{ fontSize: `${translationFontSize}px` }}
-        >
-          {verse.translations?.[0]?.text.replace(/<(?:.|\n)*?>/gm, "")}
-        </p>
+        {showTranslation && verse.translations && verse.translations.length > 0 && (
+          <p
+            className="text-muted-foreground leading-relaxed transition-all"
+            style={{ fontSize: `${translationFontSize}px` }}
+          >
+            {verse.translations[0].text.replace(/<(?:.|\n)*?>/gm, "")}
+          </p>
+        )}
       </div>
     </div>
   );

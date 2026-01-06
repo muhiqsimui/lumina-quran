@@ -1,58 +1,58 @@
 # 🌙 Lumina Quran
 
-Lumina Quran adalah aplikasi web Al-Quran modern yang mengedepankan estetika premium, performa tinggi, dan akurasi teks. Dibangun dengan teknologi web terbaru untuk memberikan pengalaman membaca dan mendengarkan Al-Quran yang khusyuk dan intuitif.
+Lumina Quran adalah aplikasi web Al-Quran modern dengan estetika premium yang dirancang untuk memberikan pengalaman membaca yang khusyuk dan intuitif. Aplikasi ini mendukung pemilihan versi Mushaf antara Standar Kemenag RI dan Uthmani (Madinah).
 
 ---
 
 ## ✨ Fitur Utama
 
-- **Mushaf Digital Otentik**: Menggunakan font **LPMQ Isep Misbah** dan **KFGQPC Uthmanic Naskh** untuk tampilan teks Rasm Utsmani yang jernih dan sesuai standar Mushaf Madinah.
-- **Tiga Mode Membaca**:
-  - 📖 **Baca per Surah**: Navigasi daftar 114 surah dengan informasi lengkap.
-  - 📍 **Baca per Ayat**: Tampilan fokus satu ayat untuk tadabbur yang mendalam.
-  - 📄 **Baca per Halaman**: Tampilan replika Mushaf fisik (604 halaman) dengan layout rata kanan-kiri (justified).
-- **Audio Murattal Berkualitas**: Recitation oleh **Syaikh Ali Al-Hudhaify** (Imam Masjid Nabawi) dengan kualitas 128kbps yang jernih, diputar secara verse-by-verse.
-- **Pencarian Canggih**: Sistem pencarian ayat berdasarkan kata kunci dalam Terjemahan Indonesia maupun Teks Arab secara instan.
-- **Tafsir & Markah**: Dilengkapi dengan **Tafsir Kemenag RI** dan fitur **Bookmark** untuk menyimpan kemajuan bacaan Anda.
+- **Opsi Versi Mushaf**:
+  - 🇮🇩 **Versi Kemenag RI**: Menggunakan teks Al-Quran standar Indonesia (Kemenag) yang familiar bagi pengguna di Indonesia (Default).
+  - 🇸🇦 **Versi Uthmani (Madinah)**: Teks Al-Quran gaya Madinah (Rasm Utsmani) untuk pembaca internasional.
+- **Pilihan Font Arab Premium**:
+  - **LPMQ Isep Misbah** (Standar Kemenag RI).
+  - **Amiri** (Naskh Style).
+  - **Uthmanic Hafs** & **Uthman Taha Naskh**.
+- **Audio Murattal Interaktif**:
+  - Pilihan Qari ternama: **Mishary Rashid al-Afasy**, **Ali Hudhaify**, **Mahmoud al-Husary**.
+  - Kontrol audio yang lancar dengan fitur **Auto-play** dan **Repeat Mode**.
+- **Mode Navigasi Lengkap**:
+  - Baca per **Surah**, per **Juz**, dan per **Halaman** (Mushaf view).
+- **Fitur Pendukung**:
+  - **Tafsir Kemenag RI** terintegrasi untuk setiap ayat.
+  - **Pencarian Canggih** berdasarkan arti (Terjemahan) maupun teks Arab.
+  - **Bookmark & Last Read**: Simpan ayat favorit dan otomatis ingat lokasi terakhir dibaca.
+  - **Word-by-Word**: Terjemahan kata per kata (tersedia untuk versi Uthmani).
+  - **Ukuran Font Adaptif**: Atur ukuran font Arab dan terjemahan sesuai kenyamanan mata.
+  - **Tema Dinamis**: Dukungan Dark Mode, Light Mode, dan Sinkronisasi Sistem.
 
 ---
 
-## 📡 Sumber Data & API
+## 📡 Sumber Data
 
-Aplikasi ini mengintegrasikan beberapa sumber data terpercaya untuk memastikan reliabilitas:
+Aplikasi ini menggunakan sumber data terbuka yang tepercaya untuk memastikan akurasi:
 
-1.  **[Quran.com API v4](https://api.quran.com/docs)**: Digunakan untuk manajemen data surah, informasi juz, dan mesin pencarian ayat.
-2.  **[Rioastamal Quran JSON](https://github.com/rioastamal/quran-json)**: Sumber utama untuk teks ayat (Utsmani) dan Tafsir Kemenag guna memastikan akurasi karakter dan kecepatan loading.
-3.  **[QuranicAudio Mirrors](https://quranicaudio.com/)**: Penyedia file audio MP3 murattal per ayat yang stabil dan jernih.
+1.  **[Al-Quran JSON Indonesia (Kemenag)](https://github.com/ianoit/Al-Quran-JSON-Indonesia-Kemenag)**: Sumber utama untuk Teks Al-Quran versi Kemenag RI.
+2.  **[Quran JSON (Risan)](https://github.com/risan/quran-json)**: Sumber data untuk Teks Al-Quran versi Uthmani, Terjemahan Indonesia, dan Metadata Surah.
+3.  **[EveryAyah.com](https://everyayah.com/)**: Database audio murattal per ayat berkualitas tinggi.
+4.  **[Quran.com API v4](https://api.quran.com/docs)**: Referensi untuk struktur data Juz dan Page.
 
 ---
 
-## 🛠️ Tech Stack & Dependensi
+## 🛠️ Tech Stack
 
-Lumina Quran dikembangkan menggunakan teknologi terkini (berdasarkan `package.json`):
+Lumina Quran dikembangkan menggunakan teknologi modern untuk performa maksimal:
 
-### Core Framework
-- **Next.js**: `16.1.1` (App Router)
-- **React**: `19.2.3`
-- **TypeScript**: `^5`
-
-### State & Data Management
-- **TanStack Query (React Query)**: `^5.90.12`
-- **Zustand**: `^5.0.9` (Client-side state & persistence)
-
-### UI & Styling
-- **Tailwind CSS**: `^4.0.0`
-- **Lucide React**: `^0.562.0` (Icons)
-- **Next Themes**: `^0.4.6` (Dark/Light mode support)
-
-### Media Handling
-- **Howler.js**: `^2.2.4` (Advanced audio playback control)
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Audio Library**: [Howler.js](https://howlerjs.com/)
 
 ---
 
 ## 🚀 Panduan Pengembang
-
-Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal:
 
 ### ⚙️ Prasyarat
 - **Node.js**: v18.0.0 atau lebih tinggi
@@ -85,7 +85,7 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal:
 
 ## 📄 Lisensi
 
-Proyek ini dilisensikan di bawah **[Lisensi MIT](LICENSE)**. Anda bebas menggunakan, memodifikasi, dan mendistribusikan kode ini untuk tujuan kebaikan.
+Proyek ini dilisensikan di bawah **[Lisensi MIT](LICENSE)**.
 
 ---
-Dikembangkan dengan ❤️ untuk kemudahan akses Al-Quran secara digital.
+Dikembangkan dengan ❤️ untuk mempermudah umat Islam berinteraksi dengan Al-Quran secara digital.

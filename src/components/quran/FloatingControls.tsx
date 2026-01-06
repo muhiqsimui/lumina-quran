@@ -21,9 +21,19 @@ export function FloatingControls({
 }: FloatingControlsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [selectedSurah, setSelectedSurah] = useState(currentChapterId);
   const [selectedAyah, setSelectedAyah] = useState(currentVerseNumber);
   const router = useRouter();
+
+  // Handle mounting status
+  useEffect(() => {
+    setMounted(true);
+    // Check initial fullscreen state
+    if (typeof document !== 'undefined') {
+      setIsFullscreen(!!document.fullscreenElement);
+    }
+  }, []);
 
   // Update selected values when props change
   useEffect(() => {
@@ -73,6 +83,8 @@ export function FloatingControls({
   }, []);
 
   const currentChapter = chapters.find((c) => c.id === selectedSurah);
+
+  if (!mounted) return null;
 
   return (
     <div
