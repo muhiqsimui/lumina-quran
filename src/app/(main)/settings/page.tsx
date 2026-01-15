@@ -21,8 +21,6 @@ export default function SettingsPage() {
     setArabicFontSize,
     translationFontSize,
     setTranslationFontSize,
-    showWordByWord,
-    setShowWordByWord,
     selectedQariId,
     selectedQari,
     setSelectedQari,
@@ -202,30 +200,6 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="space-y-4 border-t border-border pt-6">
-          <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
-            <div className="space-y-0.5">
-              <div className="font-medium">Kata per Kata</div>
-              <div className="text-xs text-muted-foreground">
-                Tampilkan terjemahan untuk setiap kata
-              </div>
-            </div>
-            <button
-              onClick={() => setShowWordByWord(!showWordByWord)}
-              className={cn(
-                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                showWordByWord ? "bg-primary" : "bg-muted"
-              )}
-            >
-              <span
-                className={cn(
-                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                  showWordByWord ? "translate-x-5" : "translate-x-0"
-                )}
-              />
-            </button>
-          </div>
-        </div>
       </section>
 
       <footer className="pt-8 text-center text-xs text-muted-foreground">

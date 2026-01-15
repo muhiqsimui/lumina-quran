@@ -13,7 +13,6 @@ export type MushafMode = "kemenag" | "uthmani";
 interface SettingsState {
   arabicFontSize: number;
   translationFontSize: number;
-  showWordByWord: boolean;
   selectedQariId: string;
   selectedQari: Qari | null;
   lastRead: {
@@ -29,7 +28,6 @@ interface SettingsState {
   // Actions
   setArabicFontSize: (size: number) => void;
   setTranslationFontSize: (size: number) => void;
-  setShowWordByWord: (show: boolean) => void;
   setSelectedQari: (qariId: string, qari: Qari) => void;
   setLastRead: (lastRead: SettingsState["lastRead"]) => void;
   setFontFamily: (font: string) => void;
@@ -42,7 +40,6 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       arabicFontSize: 32,
       translationFontSize: 16,
-      showWordByWord: true,
       selectedQariId: "Alafasy_64kbps",
       selectedQari: {
         id: "Alafasy_64kbps",
@@ -57,7 +54,6 @@ export const useSettingsStore = create<SettingsState>()(
 
       setArabicFontSize: (size) => set({ arabicFontSize: size }),
       setTranslationFontSize: (size) => set({ translationFontSize: size }),
-      setShowWordByWord: (show) => set({ showWordByWord: show }),
       setSelectedQari: (qariId, qari) =>
         set({ selectedQariId: qariId, selectedQari: qari }),
       setLastRead: (lastRead) => set({ lastRead }),

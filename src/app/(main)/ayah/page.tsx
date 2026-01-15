@@ -67,26 +67,6 @@ export default function SingleAyahPage() {
     fetchVerse();
   }, [currentSurahId, currentVerseNumber]);
 
-  // Auto-play verse when it loads (after navigation from AudioBar)
-  useEffect(() => {
-    if (verse && selectedQari) {
-      const surahPadded = String(currentSurahId).padStart(3, "0");
-      const versePadded = String(verse.verse_number).padStart(3, "0");
-      const audioUrl = `https://everyayah.com/data/${selectedQari.reciter_id}/${surahPadded}${versePadded}.mp3`;
-
-      const currentChapter = chapters.find((c) => c.id === currentSurahId);
-      const chapterName =
-        currentChapter?.name_simple || `Surah ${currentSurahId}`;
-
-      setAudio(
-        currentSurahId,
-        verse.verse_number,
-        audioUrl,
-        chapterName,
-        selectedQari.name
-      );
-    }
-  }, [verse, currentSurahId, selectedQari, chapters, setAudio]);
 
   // Save debounced last read position to persistent store
   useEffect(() => {

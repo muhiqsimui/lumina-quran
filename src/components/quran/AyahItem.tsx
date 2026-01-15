@@ -25,7 +25,6 @@ export function AyahItem({
   const { 
     arabicFontSize, 
     translationFontSize, 
-    showWordByWord, 
     fontFamily,
     showTranslation
   } = useSettingsStore();
@@ -100,30 +99,6 @@ export function AyahItem({
       </div>
 
       <div className="space-y-4 pt-4">
-        {showWordByWord && verse.words && verse.words.length > 0 && (
-          <div className="flex flex-wrap gap-3" dir="rtl">
-            {verse.words.map((word) => (
-              <div key={word.id} className="group/word relative">
-                <span
-                  className={cn(
-                    fontClass,
-                    "text-foreground/80 group-hover/word:text-primary transition-colors cursor-default leading-[2.5]"
-                  )}
-                  style={{ 
-                    fontSize: `${arabicFontSize * 0.75}px`,
-                    fontFeatureSettings: '"rlig" 1, "calt" 1, "liga" 1',
-                    textRendering: 'optimizeLegibility'
-                  }}
-                >
-                  {normalizeQuranText(word.text_uthmani)}
-                </span>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-[10px] rounded opacity-0 group-hover/word:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-border shadow-md">
-                  {word?.translation?.text}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {showTranslation && verse.translations && verse.translations.length > 0 && (
           <p

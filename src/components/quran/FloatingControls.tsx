@@ -136,21 +136,55 @@ export function FloatingControls({
             {/* Ayah Selection */}
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Pilih Ayat
+                Pilih Ayat (Maks. {totalVerses})
               </label>
-              <select
-                value={selectedAyah}
-                onChange={handleAyahChange}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-              >
-                {Array.from({ length: totalVerses }, (_, i) => i + 1).map(
-                  (num) => (
-                    <option key={num} value={num}>
-                      Ayat {num}
-                    </option>
-                  )
-                )}
-              </select>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={totalVerses}
+                  value={selectedAyah || ""}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (isNaN(val)) {
+                      setSelectedAyah(0);
+                      return;
+                    }
+                    if (val > totalVerses) {
+                      setSelectedAyah(totalVerses);
+                    } else if (val < 1) {
+                      setSelectedAyah(1);
+                    } else {
+                      setSelectedAyah(val);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && selectedAyah >= 1 && selectedAyah <= totalVerses) {
+                      const element = document.querySelector(`[data-verse-number="${selectedAyah}"]`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: "smooth", block: "center" });
+                        setIsOpen(false);
+                      }
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                  placeholder={`1-${totalVerses}`}
+                />
+                <button
+                  onClick={() => {
+                    if (selectedAyah >= 1 && selectedAyah <= totalVerses) {
+                      const element = document.querySelector(`[data-verse-number="${selectedAyah}"]`);
+                      if (element) {
+                        element.scrollIntoView({ behavior: "smooth", block: "center" });
+                        setIsOpen(false);
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Cari
+                </button>
+              </div>
             </div>
 
             {/* Fullscreen Button */}
