@@ -7,6 +7,7 @@ import {
   Search,
   Settings,
   CircleDot,
+  Clock,
 } from "lucide-react";
 import { LastReadCard } from "@/components/quran/LastReadCard";
 
@@ -45,6 +46,13 @@ const menuItems = [
     icon: CircleDot,
     href: "/dzikir",
     color: "bg-purple-500/10 text-purple-600",
+  },
+  {
+    title: "Jadwal Sholat",
+    description: "Waktu sholat akurat sesuai lokasi Anda",
+    icon: Clock,
+    href: "/prayer-times",
+    color: "bg-rose-500/10 text-rose-600",
   },
 ];
 
