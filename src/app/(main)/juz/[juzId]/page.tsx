@@ -2,6 +2,7 @@ import { getVersesByJuzLocal, getChaptersLocal } from "@/lib/quran-service";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { JuzVerseList } from "@/components/quran/JuzVerseList";
+import { JuzFloatingControls } from "@/components/quran/JuzFloatingControls";
 
 interface JuzReadingProps {
   params: Promise<{ juzId: string }>;
@@ -17,6 +18,13 @@ export default async function JuzReading({ params }: JuzReadingProps) {
   return (
     <div className="max-w-4xl mx-auto min-h-screen pb-20 pt-4 px-2 sm:px-0 animate-in fade-in duration-700">
       
+      {/* Floating Navigation Controls */}
+      <JuzFloatingControls 
+        currentJuz={currentJuz}
+        chapters={chapters}
+        verses={verses}
+      />
+
       {/* Header Info */}
       <div className="flex items-center justify-between mb-8 px-2">
         <h1 className="text-2xl font-bold">Juz {currentJuz}</h1>
