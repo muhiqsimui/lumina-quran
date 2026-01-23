@@ -1,7 +1,7 @@
 "use client";
 
-import { X, Share2, Copy, Download, MessageCircle, Instagram, Check, Link2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { X, Share2, Copy, Download, MessageCircle, Instagram, Check, Link2, FileText } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface ShareAyahDialogProps {
@@ -12,6 +12,7 @@ interface ShareAyahDialogProps {
   ayahKey: string;
   textArabic?: string;
   translation?: string;
+  note?: string;
 }
 
 export function ShareAyahDialog({
@@ -22,33 +23,26 @@ export function ShareAyahDialog({
   ayahKey,
   textArabic,
   translation,
+  note,
 }: ShareAyahDialogProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [includeNote, setIncludeNote] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      generateImage();
-    } else {
-      document.body.style.overflow = "unset";
-      setPreviewUrl(null);
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  const generateImage = async () => {
+  const generateImage = useCallback(async () => {
     if (!textArabic || !translation) return;
     setIsGenerating(true);
 
     // Ensure fonts are loaded before drawing
     try {
-      await document.fonts.load("bold 40px Inter");
-      await document.fonts.load("80px Amiri");
+      await Promise.all([
+        document.fonts.load("bold 40px Inter"),
+        document.fonts.load("italic 32px Inter"),
+        document.fonts.load("italic 28px Inter"),
+        document.fonts.load("80px Amiri"),
+      ]);
     } catch (e) {
       console.warn("Fonts could not be loaded, using fallbacks", e);
     }
@@ -88,7 +82,7 @@ export function ShareAyahDialog({
     // Surah & Ayah Info
     ctx.font = "600 36px Inter, sans-serif";
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText(`Surah ${chapterName} : ${ayahNumber}`, canvas.width / 2, 160);
+    ctx.fillText(`QS. ${chapterName} : ${ayahNumber}`, canvas.width / 2, 160);
 
     // Arabic Text
     ctx.font = "80px 'Amiri', 'Traditional Arabic', serif";
@@ -158,15 +152,104 @@ export function ShareAyahDialog({
       y += 50;
     });
 
+    // Note Section
+    if (includeNote && note) {
+      y += 60;
+      
+      // Note Box
+      ctx.fillStyle = "rgba(16, 185, 129, 0.1)";
+      const boxPadding = 40;
+      const boxWidth = maxWidth;
+      const boxX = (canvas.width - boxWidth) / 2;
+      
+      // Determine note lines first to calculate box height
+      ctx.font = "italic 28px Inter, sans-serif";
+      const noteWords = note.split(" ");
+      let noteLine = "";
+      let noteLines = [];
+      
+      for (let n = 0; n < noteWords.length; n++) {
+        let testLine = noteLine + noteWords[n] + " ";
+        let metrics = ctx.measureText(testLine);
+        if (metrics.width > boxWidth - boxPadding * 2 && n > 0) {
+          noteLines.push(noteLine);
+          noteLine = noteWords[n] + " ";
+        } else {
+          noteLine = testLine;
+        }
+      }
+      noteLines.push(noteLine);
+      
+      const boxHeight = noteLines.length * 40 + boxPadding * 2 + 60;
+      
+      // Draw rounded box
+      const radius = 24;
+      ctx.beginPath();
+      ctx.moveTo(boxX + radius, y);
+      ctx.lineTo(boxX + boxWidth - radius, y);
+      ctx.quadraticCurveTo(boxX + boxWidth, y, boxX + boxWidth, y + radius);
+      ctx.lineTo(boxX + boxWidth, y + boxHeight - radius);
+      ctx.quadraticCurveTo(boxX + boxWidth, y + boxHeight, boxX + boxWidth - radius, y + boxHeight);
+      ctx.lineTo(boxX + radius, y + boxHeight);
+      ctx.quadraticCurveTo(boxX, y + boxHeight, boxX, y + boxHeight - radius);
+      ctx.lineTo(boxX, y + radius);
+      ctx.quadraticCurveTo(boxX, y, boxX + radius, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Note Title
+      ctx.font = "bold 24px Inter, sans-serif";
+      ctx.fillStyle = "#10b981";
+      ctx.textAlign = "left";
+      ctx.direction = "ltr";
+      ctx.fillText("Catatan Saya:", boxX + boxPadding, y + boxPadding + 30);
+      
+      // Note Content
+      ctx.font = "italic 28px Inter, sans-serif";
+      ctx.fillStyle = "#e2e8f0";
+      noteLines.forEach((l, i) => {
+        ctx.fillText(l, boxX + boxPadding, y + boxPadding + 70 + (i * 40));
+      });
+      
+      y += boxHeight;
+    }
+
     // Footer
     ctx.font = "300 24px Inter, sans-serif";
+    ctx.textAlign = "center";
     ctx.fillStyle = "#64748b";
     ctx.fillText("lumina-quran.vercel.app", canvas.width / 2, canvas.height - 100);
 
     const dataUrl = canvas.toDataURL("image/png");
     setPreviewUrl(dataUrl);
     setIsGenerating(false);
-  };
+  }, [includeNote, textArabic, translation, note, chapterName, ayahNumber]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const runGeneration = async () => {
+      if (isOpen && isMounted) {
+        document.body.style.overflow = "hidden";
+        await generateImage();
+      }
+    };
+
+    if (isOpen) {
+      runGeneration();
+    } else {
+      document.body.style.overflow = "unset";
+      setPreviewUrl(null);
+    }
+
+    return () => {
+      isMounted = false;
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, generateImage]);
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/share/${ayahKey.replace(":", "-")}`;
@@ -255,6 +338,40 @@ export function ShareAyahDialog({
           </div>
 
           <div className="space-y-6 flex-1">
+            {note && (
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Pilihan Konten</p>
+                <button
+                  onClick={() => setIncludeNote(!includeNote)}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all flex items-center justify-between group",
+                    includeNote 
+                      ? "bg-primary/5 border-primary/50" 
+                      : "bg-secondary border-border hover:border-primary/30"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-5 h-5 rounded-md border flex items-center justify-center transition-colors",
+                      includeNote ? "bg-primary border-primary" : "border-muted-foreground"
+                    )}>
+                      {includeNote && <Check className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold">Sertakan Catatan</p>
+                      <p className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+                        {note}
+                      </p>
+                    </div>
+                  </div>
+                  <FileText className={cn(
+                    "w-4 h-4 transition-colors",
+                    includeNote ? "text-primary" : "text-muted-foreground"
+                  )} />
+                </button>
+              </div>
+            )}
+
             <div className="space-y-4">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Link Akses</p>
               <button

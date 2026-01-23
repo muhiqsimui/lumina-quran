@@ -137,6 +137,7 @@ export default function BookmarksPage() {
           ayahKey={sharingBookmark.ayahKey}
           textArabic={sharingBookmark.textArabic}
           translation={sharingBookmark.translation}
+          note={sharingBookmark.note}
         />
       )}
     </div>
