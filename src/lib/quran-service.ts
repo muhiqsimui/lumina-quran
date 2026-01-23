@@ -3,6 +3,7 @@ import path from 'path';
 import { ChaptersResponse, VersesResponse, Verse, SearchResponse, SearchResult } from '@/types';
 import { API_BASE_URL, DEFAULT_LANGUAGE, DEFAULT_TRANSLATION_ID } from './constants';
 import { MushafMode } from '@/store/useSettingsStore';
+import { removeArabicDiacritics } from './utils';
 
 // Helper to read JSON
 async function readJson(relativePath: string) {
@@ -15,6 +16,38 @@ async function readJson(relativePath: string) {
   } catch (error) {
     console.error(`Error reading ${filePath}`, error);
     return null;
+  }
+}
+
+// In-memory cache for search data
+let quranIdCache: any[] | null = null;
+let quranIdPromise: Promise<any[]> | null = null;
+
+async function getQuranIdData() {
+  if (quranIdCache) return quranIdCache;
+  if (quranIdPromise) return quranIdPromise;
+
+  quranIdPromise = readJson('quran_id.json').then(data => {
+    quranIdCache = data;
+    return data;
+  });
+
+  return quranIdPromise;
+}
+
+function highlightMatch(text: string, query: string): string {
+  if (!query) return text;
+  const words = query.split(/\s+/).filter(w => w.length > 2);
+  if (words.length === 0) return text;
+  
+  try {
+    const pattern = words
+      .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    const regex = new RegExp(`(${pattern})`, 'gi');
+    return text.replace(regex, '<em>$1</em>');
+  } catch (e) {
+    return text;
   }
 }
 
@@ -276,41 +309,67 @@ async function hydrateVerses(structuralVerses: any[], mode: MushafMode = 'kemena
   };
 }
 
-export async function searchVersesLocal(query: string): Promise<SearchResponse> {
-  const queryLower = query.toLowerCase();
-  const validChapterIds = Array.from({length: 114}, (_, i) => i + 1);
+export async function searchVersesLocal(query: string, page: number = 1, perPage: number = 20): Promise<SearchResponse> {
+  const data = await getQuranIdData();
   
-  const allResults = await Promise.all(validChapterIds.map(async (cid) => {
-     const cData = await readJson(`chapters/id/${cid}.json`);
-     if(!cData) return [];
-     
-     const matches = cData.verses.filter((v: any) => {
-         const trans = (v.translation || '').toLowerCase();
-         const text = (v.text || ''); 
-         return trans.includes(queryLower) || text.includes(query);
-     }).map((v: any) => ({
-         verse_key: `${cid}:${v.id}`,
-         verse_id: parseInt(`${cid}${v.id}`),
-         text: v.text, 
-         translations: [{ 
-            text: v.translation,
+  if (!data) {
+    return {
+      search: {
+        query,
+        total_results: 0,
+        current_page: 1,
+        total_pages: 0,
+        results: []
+      }
+    };
+  }
+
+  const queryLower = query.toLowerCase();
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
+  
+  const results: SearchResult[] = [];
+  
+  // Optimization: Single pass through the data
+  for (const surah of data) {
+    for (const verse of surah.verses) {
+      const trans = (verse.translation || '').toLowerCase();
+      const textRaw = (verse.text || '');
+      const textPlain = removeArabicDiacritics(textRaw);
+      
+      // Match if all words are present in either translation or Arabic text (raw or normalized)
+      const isMatch = queryWords.every(word => {
+        const wordPlain = removeArabicDiacritics(word);
+        return trans.includes(word) || textRaw.includes(word) || textPlain.includes(wordPlain);
+      });
+      
+      if (isMatch) {
+        results.push({
+          verse_key: `${surah.id}:${verse.id}`,
+          verse_id: parseInt(`${surah.id}${verse.id}`),
+          text: verse.text,
+          translations: [{
+            text: highlightMatch(verse.translation, query),
             resource_id: DEFAULT_TRANSLATION_ID,
             name: "Indonesian",
             language_name: "indonesian"
-         }]
-     }));
-     return matches;
-  }));
+          }]
+        });
+      }
+    }
+  }
   
-  const results = allResults.flat();
+  const totalResults = results.length;
+  const totalPages = Math.ceil(totalResults / perPage);
+  const start = (page - 1) * perPage;
+  const paginatedResults = results.slice(start, start + perPage);
   
   return {
     search: {
       query,
-      total_results: results.length,
-      current_page: 1,
-      total_pages: Math.ceil(results.length / 20),
-      results: results.slice(0, 20)
+      total_results: totalResults,
+      current_page: page,
+      total_pages: totalPages,
+      results: paginatedResults
     }
   };
 }

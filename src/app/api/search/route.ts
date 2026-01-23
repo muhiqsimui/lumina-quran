@@ -4,6 +4,7 @@ import { searchVersesLocal } from '@/lib/quran-service';
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const q = searchParams.get('q');
+  const page = parseInt(searchParams.get('page') || '1');
   
   if (!q) {
     return NextResponse.json({ 
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await searchVersesLocal(q);
+    const data = await searchVersesLocal(q, page);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Search error:', error);

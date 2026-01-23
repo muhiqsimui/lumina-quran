@@ -14,6 +14,13 @@ export function normalizeQuranText(text: string): string {
   return normalized;
 }
 
+export function removeArabicDiacritics(text: string): string {
+  if (!text) return text;
+  // Arabic diacritics: Fathatan, Dammatan, Kasratan, Fatha, Damma, Kasra, Shadda, Sukun
+  // Plus some Quranic specific marks like small alif, etc.
+  return text.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '');
+}
+
 
 export function getArabicFontClass(fontId: string): string {
   switch (fontId) {
