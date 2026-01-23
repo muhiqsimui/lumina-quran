@@ -6,14 +6,22 @@ Lumina Quran adalah aplikasi web Al-Quran modern dengan estetika premium yang di
 
 ## ✨ Fitur Utama
 
+- **Mode Menghafal (Memorization Mode)** (Baru!):
+  - Sembunyikan/tampilkan teks ayat secara instan untuk melatih hafalan.
+  - Dilengkapi dengan *floating toggle* untuk akses cepat saat membaca.
+- **Berbagi Ayat (Share Ayah)** (Baru!):
+  - Bagikan cuplikan ayat favorit dengan desain premium ke media sosial.
+  - Mendukung tautan langsung ke ayat spesifik dengan tampilan yang dioptimalkan.
+- **Navigasi Juz & Ayat yang Cepat** (Baru!):
+  - Pindah antar Juz atau lompat ke ayat tertentu secara instan tanpa memuat ulang halaman.
 - **Opsi Versi Mushaf**:
   - 🇮🇩 **Versi Kemenag RI**: Menggunakan teks Al-Quran standar Indonesia (Kemenag) yang familiar bagi pengguna di Indonesia (Default).
   - 🇸🇦 **Versi Uthmani (Madinah)**: Teks Al-Quran gaya Madinah (Rasm Utsmani) untuk pembaca internasional.
-- **Jadwal Shalat Global** (Baru!):
+- **Jadwal Shalat Global**:
   - Waktu sholat akurat mencakup seluruh dunia menggunakan koordinat GPS atau deteksi IP.
   - Pencarian kota internasional terintegrasi dengan data **Nominatim (OpenStreetMap)**.
   - Hitung mundur ke waktu sholat berikutnya dengan penyesuaian zona waktu otomatis.
-- **Dzikir & Tasbih Digital** (Baru!):
+- **Dzikir & Tasbih Digital**:
   - Penghitung dzikir interaktif dengan desain minimalis.
   - Mode getar (vibrate) dan siklus target untuk membantu khusyuk berdzikir.
 - **Pilihan Font Arab Premium**:
@@ -29,7 +37,8 @@ Lumina Quran adalah aplikasi web Al-Quran modern dengan estetika premium yang di
 - **Fitur Pendukung**:
   - **Tafsir Kemenag RI** terintegrasi untuk setiap ayat.
   - **Pencarian Canggih** berdasarkan arti (Terjemahan) maupun teks Arab.
-  - **Bookmark & Last Read**: Simpan ayat favorit dan otomatis ingat lokasi terakhir dibaca.
+  - **Bookmark dengan Catatan**: Simpan ayat favorit dan tambahkan pengingat atau catatan pribadi.
+  - **Last Read**: Otomatis ingat lokasi terakhir dibaca untuk setiap mode (Surah/Juz/Page).
   - **Ukuran Font Adaptif**: Atur ukuran font Arab dan terjemahan sesuai kenyamanan mata.
   - **Tema Dinamis**: Dukungan Dark Mode, Light Mode, dan Sinkronisasi Sistem.
 
@@ -94,7 +103,7 @@ Lumina Quran dikembangkan menggunakan teknologi modern untuk performa maksimal:
 
 ## 📄 Lisensi
 
-Proyek ini dilisensikan di bawah **[Lisensi MIT](LICENSE)**.
+Proyek ini dilisensikan di bawah **[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE)**.
 
 ---
 Dikembangkan dengan ❤️ untuk mempermudah umat Islam berinteraksi dengan Al-Quran secara digital.
