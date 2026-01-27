@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Lumina Quran",
+  title: "Kafein Quran",
   description: "A high-performance Al-Quran Web Application",
 };
 

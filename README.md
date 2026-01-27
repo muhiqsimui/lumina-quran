@@ -1,6 +1,6 @@
-# 🌙 Lumina Quran
+# ☕ Kafein Quran
 
-Lumina Quran adalah aplikasi web Al-Quran modern dengan estetika premium yang dirancang untuk memberikan pengalaman membaca yang khusyuk dan intuitif. Aplikasi ini mendukung pemilihan versi Mushaf antara Standar Kemenag RI dan Uthmani (Madinah).
+Kafein Quran adalah aplikasi web Al-Quran modern dengan estetika premium yang dirancang untuk memberikan pengalaman membaca yang khusyuk dan intuitif. Aplikasi ini mendukung pemilihan versi Mushaf antara Standar Kemenag RI dan Uthmani (Madinah).
 
 ---
 
@@ -59,7 +59,7 @@ Aplikasi ini menggunakan sumber data terbuka yang tepercaya untuk memastikan aku
 
 ## 🛠️ Tech Stack
 
-Lumina Quran dikembangkan menggunakan teknologi modern untuk performa maksimal:
+Kafein Quran dikembangkan menggunakan teknologi modern untuk performa maksimal:
 
 - **Framework**: [Next.js](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
@@ -80,8 +80,8 @@ Lumina Quran dikembangkan menggunakan teknologi modern untuk performa maksimal:
 
 1.  **Clone Repositori**:
     ```bash
-    git clone https://github.com/muhiqsimui/lumina-quran.git
-    cd lumina-quran
+    git clone https://github.com/muhiqsimui/kafein-quran.git
+    cd kafein-quran
     ```
 
 2.  **Instal Dependensi**:

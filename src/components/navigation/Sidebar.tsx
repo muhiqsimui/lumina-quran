@@ -41,9 +41,9 @@ export function Sidebar() {
       <aside className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-border bg-card/50 backdrop-blur-sm p-4">
         <div className="flex items-center gap-2 mb-8 px-2">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">L</span>
+            <span className="text-primary-foreground font-bold text-lg">K</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight">Lumina Quran</h1>
+          <h1 className="text-xl font-bold tracking-tight">Kafein Quran</h1>
         </div>
 
         <nav className="flex-1 space-y-1">

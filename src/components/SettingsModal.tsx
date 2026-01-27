@@ -322,7 +322,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           <br/>
           
           <div className="text-[8px] mt-2">
-          Lumina Quran v1.0.0 • Dibuat oleh{" "}
+          Kafein Quran v1.0.0 • Dibuat oleh{" "}
           <a target="__blank" href="https://github.com/muhiqsimui">
             Muhammad Iqbal atau @muhiqsimui.
           </a>

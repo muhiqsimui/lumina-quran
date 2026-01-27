@@ -73,7 +73,7 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({ isTextHidden: !state.isTextHidden })),
     }),
     {
-      name: "lumina-quran-settings",
+      name: "kafein-quran-settings",
     }
   )
 );

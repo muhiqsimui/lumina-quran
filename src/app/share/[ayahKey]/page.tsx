@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!verse || !surah) {
     return {
-      title: "Ayat tidak ditemukan | Lumina Quran",
+      title: "Ayat tidak ditemukan | Kafein Quran",
     };
   }
 

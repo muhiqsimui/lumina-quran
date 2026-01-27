@@ -80,7 +80,7 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <header className="space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Lumina <span className="text-primary italic">Quran</span>
+          Kafein <span className="text-primary italic">Quran</span>
         </h1>
         <p className="text-muted-foreground">
           Selamat datang di taman-taman surga. Rasulullah ﷺ bersabda: 'Bacalah

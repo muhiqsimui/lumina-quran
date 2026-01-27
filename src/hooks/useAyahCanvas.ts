@@ -208,7 +208,7 @@ export function useAyahCanvas() {
     ctx.font = "bold 45px Inter, sans-serif";
     ctx.fillStyle = theme.primary;
     ctx.textAlign = "center";
-    ctx.fillText("Lumina Quran", canvas.width / 2, cursorY);
+    ctx.fillText("Kafein Quran", canvas.width / 2, cursorY);
 
     cursorY += 70;
     ctx.font = "600 40px Inter, sans-serif";
@@ -288,7 +288,8 @@ export function useAyahCanvas() {
     ctx.font = "300 28px Inter, sans-serif";
     ctx.textAlign = "center";
     ctx.fillStyle = theme.secondary;
-    ctx.fillText("lumina-quran.vercel.app", canvas.width / 2, canvas.height - 100);
+    const domain = typeof window !== "undefined" ? window.location.hostname : "quran.kafein.web.id";
+    ctx.fillText(domain, canvas.width / 2, canvas.height - 100);
 
     const dataUrl = canvas.toDataURL("image/png");
     setPreviewUrl(dataUrl);

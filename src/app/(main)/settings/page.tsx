@@ -268,7 +268,7 @@ export default function SettingsPage() {
       </section>
 
       <footer className="pt-8 text-center text-xs text-muted-foreground">
-        Lumina Quran v1.0.0 • Dibuat oleh{" "}
+        Kafein Quran v1.0.0 • Dibuat oleh{" "}
         <a target="__blank" href="https://github.com/muhiqsimui">
           Muhammad Iqbal atau @muhiqsimui.
         </a>

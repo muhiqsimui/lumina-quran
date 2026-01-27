@@ -90,7 +90,7 @@ export function ShareAyahDialog({
   const handleDownload = () => {
     if (!previewUrl) return;
     const link = document.createElement("a");
-    link.download = `lumina-quran-${ayahKey.replace(":", "-")}.png`;
+    link.download = `kafein-quran-${ayahKey.replace(":", "-")}.png`;
     link.href = previewUrl;
     link.click();
   };
@@ -106,7 +106,7 @@ export function ShareAyahDialog({
         await navigator.share({
           files: [file],
           title: `QS ${chapterName}:${ayahNumber}`,
-          text: `Baca ayat ini di Lumina Quran`,
+          text: `Baca ayat ini di Kafein Quran`,
         });
       } else {
         handleDownload();
